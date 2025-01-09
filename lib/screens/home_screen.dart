@@ -5,7 +5,7 @@ import '../services/sms_parser_service.dart';
 import '../models/financial_account.dart';
 import '../models/transaction.dart';
 import '../widgets/recent_transactions_list.dart';
-import './transactions_screen.dart';
+import 'base_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -17,11 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<FinancialAccount> _accounts = [];
   bool _isLoading = true;
   String? _error;
-  int _selectedIndex = 0;
   int _currentCardIndex = 0;
-  bool _isDarkMode = false;
-  bool _hideAmounts = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -61,115 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: Colors.green,
-                gradient:  LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.blue,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            accountName: const Text(
-              'abenenzer kifle',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            accountEmail: const Text(
-              'My Wallet',
-              style: TextStyle(color: Colors.white),
-            ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.grey[200],
-              child: const Text(
-                'A',
-                style: TextStyle(fontSize: 40.0, color: Colors.green),
-              ),
-            ),
-          ),
-          _buildDrawerItem(Icons.workspace_premium, 'Get Premium'),
-          _buildDrawerItem(Icons.account_balance, 'Bank Sync'),
-          _buildDrawerItem(Icons.home, 'Home', isSelected: true),
-          _buildDrawerItem(Icons.receipt_long, 'Records'),
-          _buildDrawerItem(Icons.trending_up, 'Investments', showNew: true),
-          _buildDrawerItem(Icons.analytics, 'Statistics'),
-          _buildDrawerItem(Icons.schedule, 'Planned payments'),
-          _buildDrawerItem(Icons.account_balance_wallet, 'Budgets'),
-          _buildDrawerItem(Icons.money_off, 'Debts'),
-          _buildDrawerItem(Icons.flag, 'Goals'),
-          _buildDrawerItem(Icons.business, 'Wallet for your business',
-              showNew: true),
-                 const Divider(),
-          _buildDrawerItem(Icons.shopping_cart, 'Shopping lists'),
-          _buildDrawerItem(Icons.security, 'Warranties'),
-          _buildDrawerItem(Icons.card_giftcard, 'Loyalty cards'),
-          _buildDrawerItem(Icons.currency_exchange, 'Currency rates'),
-          _buildDrawerItem(Icons.group, 'Group sharing'),
-          _buildDrawerItem(Icons.more_horiz, 'Others'),
-          const Divider(),
-          SwitchListTile(
-            title: Text('Dark mode'),
-            value: _isDarkMode,
-            onChanged: (bool value) {
-              setState(() {
-                _isDarkMode = value;
-              });
-            },
-          ),
-          SwitchListTile(
-            title: Text('Hide Amounts'),
-            value: _hideAmounts,
-            onChanged: (bool value) {
-              setState(() {
-                _hideAmounts = value;
-              });
-            },
-          ),
-          Divider(),
-          _buildDrawerItem(Icons.person_add, 'Invite friends'),
-          _buildDrawerItem(Icons.favorite, 'Follow us'),
-          _buildDrawerItem(Icons.help, 'Help'),
-          _buildDrawerItem(Icons.settings, 'Settings'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title,
-      {bool isSelected = false, bool showNew = false}) {
-    return ListTile(
-      leading: Icon(icon, color: isSelected ? Colors.blue : null),
-      title: Text(title),
-      selected: isSelected,
-      trailing: showNew
-          ? Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'New',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            )
-          : null,
-      onTap: () {
-        Navigator.pop(context);
-      },
-    );
-  }
-
   List<Widget> _buildDemoCards() {
     return List.generate(5, (index) {
       return Container(
@@ -182,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              gradient:const  LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
                   Colors.purple,
                   Colors.blue,
@@ -192,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               borderRadius: BorderRadius.circular(20),
             ),
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       'Card ${index + 1}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -211,18 +98,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(Icons.credit_card, color: Colors.white),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   '**** **** **** ${(1000 + index).toString()}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 18,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   '\$${(10000 * (index + 1)).toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -234,15 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     });
-  }
-
-  void _navigateToTransactions(FinancialAccount account) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TransactionsScreen(account: account),
-      ),
-    );
   }
 
   Widget _buildMenuGrid() {
@@ -258,11 +136,11 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 16,
           mainAxisSpacing: 20,
@@ -274,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
@@ -292,11 +170,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.blue,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 menuItems[index]['label'],
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -308,86 +186,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
-    final List<Map<String, dynamic>> actions = [
-      {'icon': Icons.swap_horiz, 'label': 'Transfer'},
-      {'icon': Icons.request_page, 'label': 'Request'},
-      {'icon': Icons.qr_code_scanner, 'label': 'Scan'},
-      {'icon': Icons.sync_alt, 'label': 'Swap'},
-      {'icon': Icons.more_horiz, 'label': 'More'},
-    ];
-
-    return Container(
-      height: 90,
-      padding: EdgeInsets.symmetric(vertical: 10),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: actions.length,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 80,
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    actions[index]['icon'],
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  actions[index]['label'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-        ),
-        title: const Text(
-          'Home',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      drawer: _buildDrawer(),
+    return BaseScreen(
+      currentIndex: 0,
+      title: 'Home', // This line is the update
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             SizedBox(
               width: MediaQuery.of(context).size.width,
               height: 200,
@@ -407,8 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             _buildMenuGrid(),
             const SizedBox(height: 20),
             if (_accounts.isNotEmpty)
@@ -421,44 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.toggle_on),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-          ),
-        ],
-      ),
     );
-  }
-
-  String _getLastFourDigits() {
-    if (_accounts.isEmpty) return '0000';
-    final firstAccount = _accounts.first;
-    final accountNumber = firstAccount.accountNumber;
-    if (accountNumber.length <= 4) return accountNumber.padLeft(4, '0');
-    return accountNumber.substring(accountNumber.length - 4);
-  }
-
-  double _calculateTotalBalance() {
-    return _accounts.fold(0.0, (sum, account) => sum + account.balance);
   }
 
   List<Transaction> _getAllTransactions() {
@@ -468,4 +238,3 @@ class _HomeScreenState extends State<HomeScreen> {
     return allTransactions;
   }
 }
-
