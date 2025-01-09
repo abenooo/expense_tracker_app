@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart'; // For currency formatting
 import '../services/sms_parser_service.dart';
 import '../models/financial_account.dart';
 import '../models/transaction.dart';
@@ -19,6 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   int _currentCardIndex = 0;
 
+  // Define a currency formatter
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'en_US',
+    symbol: 'ETB',
+    decimalDigits: 2,
+    customPattern: '¤ #,##0.00', // Ensures a space after the currency symbol
+  );
   @override
   void initState() {
     super.initState();
@@ -95,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                   const Icon(Icons.credit_card, color: Colors.white),
+                    const Icon(Icons.credit_card, color: Colors.white),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -108,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '\$${(10000 * (index + 1)).toStringAsFixed(2)}',
+                  currencyFormatter.format(10000 * (index + 1)),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
