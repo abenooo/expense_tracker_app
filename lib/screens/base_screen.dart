@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'home_screen.dart';
-import 'location_screen.dart';
+import 'setting_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
