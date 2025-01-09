@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Icon(Icons.credit_card, color: Colors.white),
+                   const Icon(Icons.credit_card, color: Colors.white),
                   ],
                 ),
                 const SizedBox(height: 20),
