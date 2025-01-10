@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:intl/intl.dart'; // For currency formatting
+import 'package:intl/intl.dart';
 import '../services/sms_parser_service.dart';
 import '../models/financial_account.dart';
 import '../models/transaction.dart';
@@ -20,13 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   int _currentCardIndex = 0;
 
-  // Define a currency formatter
   final currencyFormatter = NumberFormat.currency(
     locale: 'en_US',
     symbol: 'ETB',
     decimalDigits: 2,
-    customPattern: '¤ #,##0.00', // Ensures a space after the currency symbol
+    customPattern: '¤ #,##0.00',
   );
+
   @override
   void initState() {
     super.initState();
@@ -131,16 +131,55 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Widget _buildUtilitiesIcon() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Icon(
+          Icons.water_damage,
+          size: 40,
+          color: Colors.indigo,
+        ),
+        Positioned(
+          top: 5,
+          right: 5,
+          child: Icon(
+            Icons.wifi,
+            size: 20,
+            color: Colors.indigo,
+          ),
+        ),
+        Positioned(
+          bottom: 5,
+          left: 5,
+          child: Icon(
+            Icons.electrical_services,
+            size: 20,
+            color: Colors.indigo,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMenuGrid() {
     final List<Map<String, dynamic>> menuItems = [
-      {'icon': Icons.account_balance_wallet, 'label': 'Income'},
-      {'icon': Icons.trending_up, 'label': 'Expected'},
-      {'icon': Icons.money_off, 'label': 'Expenses'},
-      {'icon': Icons.savings, 'label': 'Savings'},
-      {'icon': Icons.credit_card, 'label': 'Loans'},
-      {'icon': Icons.bar_chart, 'label': 'Reports'},
-      {'icon': Icons.attach_money, 'label': 'Debt'},
-      {'icon': Icons.settings, 'label': 'Settings'},
+      {
+        'icon': Icons.account_balance_wallet,
+        'label': 'Income',
+        'color': Colors.green
+      },
+      {'icon': Icons.trending_up, 'label': 'Expected', 'color': Colors.blue},
+      {'icon': Icons.money_off, 'label': 'Expenses', 'color': Colors.red},
+      {'icon': Icons.savings, 'label': 'Savings', 'color': Colors.purple},
+      {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
+      {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
+      {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
+      {
+        'icon': _buildUtilitiesIcon(),
+        'label': 'Utilities',
+        'color': Colors.indigo
+      },
     ];
 
     return Container(
@@ -152,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: 4,
           crossAxisSpacing: 16,
           mainAxisSpacing: 20,
-          childAspectRatio: 0.9,
+          childAspectRatio: 0.8,
         ),
         itemCount: menuItems.length,
         itemBuilder: (context, index) {
@@ -160,9 +199,11 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
+                width: 70,
+                height: 70,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: menuItems[index]['color'].withOpacity(0.1),
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
@@ -172,11 +213,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                child: Icon(
-                  menuItems[index]['icon'],
-                  size: 24,
-                  color: Colors.blue,
-                ),
+                child: menuItems[index]['icon'] is IconData
+                    ? Icon(
+                        menuItems[index]['icon'],
+                        size: 36,
+                        color: menuItems[index]['color'],
+                      )
+                    : menuItems[index]['icon'],
               ),
               const SizedBox(height: 8),
               Text(
@@ -198,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return BaseScreen(
       currentIndex: 0,
-      title: 'Home', // This line is the update
+      title: 'Home',
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
