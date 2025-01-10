@@ -1,179 +1,82 @@
-import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
-import '../models/bank_type.dart';
-import '../models/transaction_type.dart';
-import '../models/transaction.dart';
-import '../models/financial_account.dart';
+import 'package:flutter/material.dart';
 
-class SmsParserService {
-  final SmsQuery _query = SmsQuery();
+enum TransactionType { deposit, withdrawal }
+enum BankType { cbe, awash }
 
-  Future<List<FinancialAccount>> parseAllFinancialSms() async {
-    // Use mock data instead of querying actual SMS messages
-    final List<SmsMessage> mockMessages = _generateMockSmsMessages();
+class Transaction {
+  final double amount;
+  final TransactionType type;
+  final DateTime date;
+  final String description;
+  final BankType bankType;
+  final String accountNumber;
 
-    final Map<String, List<Transaction>> accountTransactions = {};
-    final Map<String, double> accountBalances = {};
-    
-    for (var message in mockMessages) {
-      final transaction = _parseTransaction(message);
-      if (transaction != null) {
-        final accountKey = '${transaction.bankType}-${transaction.accountNumber}';
-        accountTransactions.putIfAbsent(accountKey, () => []);
-        accountTransactions[accountKey]!.add(transaction);
-        
-        // Update the account balance
-        accountBalances[accountKey] = (accountBalances[accountKey] ?? 0) + 
-          (transaction.type == TransactionType.deposit ? transaction.amount : -transaction.amount);
-      }
-    }
+  Transaction({
+    required this.amount,
+    required this.type,
+    required this.date,
+    required this.description,
+    required this.bankType,
+    required this.accountNumber,
+  });
+}
 
-    return accountTransactions.entries.map((entry) {
-      final accountKey = entry.key;
-      final transactions = entry.value;
-      final firstTx = transactions.first;
-      return FinancialAccount(
-        bankType: firstTx.bankType,
-        accountNumber: firstTx.accountNumber,
-        balance: accountBalances[accountKey] ?? 0,
-        transactions: transactions,
-        lastUpdated: transactions.map((t) => t.date).reduce((a, b) => a.isAfter(b) ? a : b),
-      );
-    }).toList();
+class Message {
+  final String body;
+  final DateTime? date;
+
+  Message({required this.body, this.date});
+}
+
+
+Transaction parseTransaction(String messageBody, DateTime? messageDate) {
+  final regex = RegExp(r'(\d+)\s+(credited|debited)\s+Birr\s+([\d,]+)');
+  final match = regex.firstMatch(messageBody);
+
+  if (match == null) {
+    throw Exception('Invalid transaction format');
   }
 
-  List<SmsMessage> _generateMockSmsMessages() {
-    return [
-      SmsMessage.fromJson({
-        'id': 1,
-        'address': 'CBEBirr',
-        'body': 'You have received ETB 1,000.00 from 0911234567. Your new balance is ETB 5,000.00.',
-        'date': DateTime.now().subtract(Duration(days: 1)).millisecondsSinceEpoch,
-      }),
-      SmsMessage.fromJson({
-        'id': 2,
-        'address': 'BOA',
-        'body': 'Your Acc No *1234 is credited by ETB 2,500.00 on 05/07/23. Available balance is ETB 7,500.00.',
-        'date': DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch,
-      }),
-      SmsMessage.fromJson({
-        'id': 3,
-        'address': 'CBE',
-        'body': 'Your Acc No *5678 is debited by ETB 500.00 on 04/07/23. Available balance is ETB 4,500.00.',
-        'date': DateTime.now().subtract(Duration(days: 3)).millisecondsSinceEpoch,
-      }),
-      SmsMessage.fromJson({
-        'id': 4,
-        'address': 'Dashen Bank',
-        'body': 'Your account *9012 has been credited with ETB 3,000.00. Your new balance is ETB 8,000.00.',
-        'date': DateTime.now().subtract(Duration(days: 4)).millisecondsSinceEpoch,
-      }),
-      SmsMessage.fromJson({
-        'id': 5,
-        'address': 'HibretBank',
-        'body': 'ETB 1,500.00 has been deposited to your account *3456. Your current balance is ETB 6,500.00.',
-        'date': DateTime.now().subtract(Duration(days: 5)).millisecondsSinceEpoch,
-      }),
-      SmsMessage.fromJson({
-        'id': 6,
-        'address': '127',
-        'body': 'You have sent ETB 200.00 to 0922345678. Your TeleBirr balance is ETB 800.00.',
-        'date': DateTime.now().subtract(Duration(days: 6)).millisecondsSinceEpoch,
-      }),
-    ];
+  return Transaction(
+    amount: double.parse(match.group(3)!.replaceAll(',', '')),
+    type: match.group(2) == 'credited' ? TransactionType.deposit : TransactionType.withdrawal,
+    date: messageDate ?? DateTime.now(),
+    description: messageBody,
+    bankType: BankType.cbe,
+    accountNumber: match.group(1)!,
+  );
+}
+
+
+void main() {
+  final message1 = Message(body: '12345 credited Birr 1000,00', date: DateTime(2024, 3, 10));
+  final message2 = Message(body: '67890 debited Birr 500', date: DateTime(2024, 3, 15));
+  final message3 = Message(body: '13579 credited Birr 2500.50');
+
+
+  try{
+    final transaction1 = parseTransaction(message1.body, message1.date);
+    final transaction2 = parseTransaction(message2.body, message2.date);
+    final transaction3 = parseTransaction(message3.body, message3.date);
+
+    print(transaction1.toJson());
+    print(transaction2.toJson());
+    print(transaction3.toJson());
+  } catch (e){
+    print("Error parsing transaction: $e");
   }
 
-  Transaction? _parseTransaction(SmsMessage message) {
-    // CBE Pattern: "Your Acc No *1234 is credited by ETB 1,000.00 on 01/01/24"
-    if (message.address == 'CBE') {
-      final match = RegExp(r'Acc No \*(\d+).*(credited|debited).* ETB ([\d,]+\.\d{2})').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(3)!.replaceAll(',', '')),
-          type: match.group(2) == 'credited' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.cbe,
-          accountNumber: match.group(1)!,
-        );
-      }
-    }
-    
-    // CBEBirr Pattern
-    if (message.address == 'CBEBirr') {
-      final match = RegExp(r'(received|sent) ETB ([\d,]+\.\d{2})').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(2)!.replaceAll(',', '')),
-          type: match.group(1) == 'received' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.cbeBirr,
-          accountNumber: 'WALLET',
-        );
-      }
-    }
+}
 
-    // BOA Pattern
-    if (message.address == 'BOA') {
-      final match = RegExp(r'Acc No \*(\d+).*(credited|debited).* ETB ([\d,]+\.\d{2})').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(3)!.replaceAll(',', '')),
-          type: match.group(2) == 'credited' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.boa,
-          accountNumber: match.group(1)!,
-        );
-      }
-    }
 
-    // Dashen Bank Pattern
-    if (message.address == 'Dashen Bank') {
-      final match = RegExp(r'account \*(\d+).*(credited|debited).* ETB ([\d,]+\.\d{2})').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(3)!.replaceAll(',', '')),
-          type: match.group(2) == 'credited' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.dashen,
-          accountNumber: match.group(1)!,
-        );
-      }
-    }
-
-    // Hibret Bank Pattern
-    if (message.address == 'HibretBank') {
-      final match = RegExp(r'ETB ([\d,]+\.\d{2}).*(deposited|withdrawn).*account \*(\d+)').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(1)!.replaceAll(',', '')),
-          type: match.group(2) == 'deposited' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.hibret,
-          accountNumber: match.group(3)!,
-        );
-      }
-    }
-
-    // 127 Pattern (TeleBirr)
-    if (message.address == '127') {
-      final match = RegExp(r'(sent|received) ETB ([\d,]+\.\d{2})').firstMatch(message.body ?? '');
-      if (match != null) {
-        return Transaction(
-          amount: double.parse(match.group(2)!.replaceAll(',', '')),
-          type: match.group(1) == 'received' ? TransactionType.deposit : TransactionType.withdrawal,
-          date: message.date ?? DateTime.now(),
-          description: message.body ?? '',
-          bankType: BankType.telebirr,
-          accountNumber: 'WALLET',
-        );
-      }
-    }
-
-    return null;
-  }
+extension TransactionToJson on Transaction {
+  Map<String, dynamic> toJson() => {
+        'amount': amount,
+        'type': type.toString().split('.').last,
+        'date': date.toIso8601String(),
+        'description': description,
+        'bankType': bankType.toString().split('.').last,
+        'accountNumber': accountNumber,
+      };
 }
 
