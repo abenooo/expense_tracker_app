@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
-import '../services/sms_parser_service.dart';
 import '../models/financial_account.dart';
 import '../models/transaction.dart';
 import '../widgets/recent_transactions_list.dart';
@@ -14,7 +12,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _smsParser = SmsParserService();
   List<FinancialAccount> _accounts = [];
   bool _isLoading = true;
   String? _error;
@@ -28,43 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    _requestSmsPermission();
-  }
-
-  Future<void> _requestSmsPermission() async {
-    final status = await Permission.sms.request();
-    if (status.isGranted) {
-      _fetchAccounts();
-    } else {
-      setState(() {
-        _isLoading = false;
-        _error = 'SMS permission is required';
-      });
-    }
-  }
-
-  Future<void> _fetchAccounts() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final accounts = await _smsParser.parseAllFinancialSms();
-      setState(() {
-        _accounts = accounts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _error = 'Failed to fetch accounts: ${e.toString()}';
-      });
-    }
-  }
-
   List<Widget> _buildDemoCards() {
     return List.generate(5, (index) {
       return Container(
