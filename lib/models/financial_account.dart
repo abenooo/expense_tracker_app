@@ -2,7 +2,7 @@ import 'bank_type.dart';
 import 'transaction.dart';
 
 class FinancialAccount {
-  final BankType bankType;
+  final String bankType;
   final String accountNumber;
   final double balance;
   final List<Transaction> transactions;
