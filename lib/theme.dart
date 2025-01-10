@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     primarySwatch:const MaterialColor(0xFF6200EE, {
-      50: Color(0xFFEDE7F6),
+      50:  Color(0xFFEDE7F6),
       100: Color(0xFFD1C4E9),
       200: Color(0xFFB39DDB),
       300: Color(0xFF9575CD),
