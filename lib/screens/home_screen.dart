@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
 import '../models/financial_account.dart';
-import '../models/transaction.dart';
-import '../widgets/recent_transactions_list.dart';
+import '../models/transaction.dart'; // Import the Transaction model
 import 'base_screen.dart';
+import '../widgets/recent_transactions.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,12 +24,11 @@ class _HomeScreenState extends State<HomeScreen> {
     customPattern: '¤ #,##0.00',
   );
 
-  @override
   List<Widget> _buildDemoCards() {
     return List.generate(5, (index) {
       return Container(
         width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Card(
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
@@ -91,37 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget _buildUtilitiesIcon() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Icon(
-          Icons.water_damage,
-          size: 40,
-          color: Colors.indigo,
-        ),
-        Positioned(
-          top: 5,
-          right: 5,
-          child: Icon(
-            Icons.wifi,
-            size: 20,
-            color: Colors.indigo,
-          ),
-        ),
-        Positioned(
-          bottom: 5,
-          left: 5,
-          child: Icon(
-            Icons.electrical_services,
-            size: 20,
-            color: Colors.indigo,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildMenuGrid() {
     final List<Map<String, dynamic>> menuItems = [
       {
@@ -135,11 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
       {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
       {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
       {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
-      {
-        'icon': _buildUtilitiesIcon(),
-        'label': 'Utilities',
-        'color': Colors.indigo
-      },
     ];
 
     return Container(
@@ -169,17 +132,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: menuItems[index]['icon'] is IconData
-                    ? Icon(
-                        menuItems[index]['icon'],
-                        size: 36,
-                        color: menuItems[index]['color'],
-                      )
-                    : menuItems[index]['icon'],
+                child: Icon(
+                  menuItems[index]['icon'],
+                  size: 36,
+                  color: menuItems[index]['color'],
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -199,6 +160,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<Transaction> sampleTransactions = []; // Replace with actual transactions
+    VoidCallback onViewAll = () {
+      // Handle "View All" action
+    };
+
     return BaseScreen(
       currentIndex: 0,
       title: 'Home',
@@ -226,26 +192,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+           
             const SizedBox(height: 24),
             _buildMenuGrid(),
-            const SizedBox(height: 20),
-            if (_accounts.isNotEmpty)
-              RecentTransactionsList(
-                transactions: _getAllTransactions(),
-                onViewAll: () {
-                  // TODO: Navigate to all transactions
-                },
-              ),
+             const SizedBox(height: 24),
+            RecentTransactionsList(
+              transactions: sampleTransactions,
+              onViewAll: onViewAll,
+            ),
           ],
         ),
       ),
     );
-  }
-
-  List<Transaction> _getAllTransactions() {
-    final allTransactions =
-        _accounts.expand((account) => account.transactions).toList();
-    allTransactions.sort((a, b) => b.date.compareTo(a.date));
-    return allTransactions;
   }
 }
