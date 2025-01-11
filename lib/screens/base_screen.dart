@@ -51,16 +51,16 @@ Widget _buildDrawer(BuildContext context) {
     child: Column(
       children: [
         // Drawer Header
-        UserAccountsDrawerHeader(
-          accountName: const Text(
+       const UserAccountsDrawerHeader(
+          accountName:  Text(
             'Abenezer Kifle',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          accountEmail: const Text(
+          accountEmail:  Text(
             'abenezerkifle@gmail.com',
             style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
-          currentAccountPicture: const CircleAvatar(
+          currentAccountPicture:  CircleAvatar(
             backgroundColor: Colors.white,
             child: Text(
               'AB',
@@ -220,16 +220,16 @@ Widget _buildDrawerItem(
               screen = HomeScreen();
               break;
             case 1:
-              screen = LocationScreen();
+              screen = const LocationScreen();
               break;
             case 2:
-              screen = ChatScreen();
+              screen = const ChatScreen();
               break;
             case 3:
-              screen = NotificationsScreen();
+              screen =const  NotificationsScreen();
               break;
             case 4:
-              screen = ProfileScreen();
+              screen = const ProfileScreen();
               break;
             default:
               return;
