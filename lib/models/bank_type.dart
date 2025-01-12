@@ -37,4 +37,3 @@ extension BankTypeExtension on BankType {
     }
   }
 }
-
