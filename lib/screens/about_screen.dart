@@ -173,7 +173,7 @@ class _SettingsScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     return BaseScreen(
       currentIndex: 4,
-      title: 'Settings',
+      title: 'About Us',
       body: ListView(
         children: [
           _buildProfileSection(),
