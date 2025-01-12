@@ -22,6 +22,7 @@ class _RecentTransactionsListState extends State<RecentTransactionsList> {
   FilterType? _currentFilter;
   SortType? _currentSort;
   List<Transaction> _filteredTransactions = [];
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
@@ -58,6 +59,26 @@ class _RecentTransactionsListState extends State<RecentTransactionsList> {
 
   void _applyFilters() {
     List<Transaction> filtered = List.from(widget.transactions);
+
+    // Apply time period filter based on selected tab
+    final now = DateTime.now();
+    filtered = filtered.where((t) {
+      switch (_selectedTabIndex) {
+        case 0: // Today
+          return t.date.year == now.year && 
+                 t.date.month == now.month && 
+                 t.date.day == now.day;
+        case 1: // Week
+          final weekAgo = now.subtract(const Duration(days: 7));
+          return t.date.isAfter(weekAgo);
+        case 2: // Month
+          return t.date.year == now.year && t.date.month == now.month;
+        case 3: // Year
+          return t.date.year == now.year;
+        default:
+          return true;
+      }
+    }).toList();
 
     // Apply type filter
     if (_currentFilter != null) {
@@ -96,186 +117,183 @@ class _RecentTransactionsListState extends State<RecentTransactionsList> {
     });
   }
 
-  Widget _buildTransactionIcon(Transaction transaction) {
-    Color backgroundColor;
-    IconData icon;
-    Color iconColor;
-
-    if (transaction.description.toLowerCase().contains('shopping')) {
-      backgroundColor = Colors.orange.shade100;
-      icon = Icons.shopping_bag;
-      iconColor = Colors.orange;
-    } else if (transaction.description.toLowerCase().contains('subscription')) {
-      backgroundColor = Colors.purple.shade100;
-      icon = Icons.subscriptions;
-      iconColor = Colors.purple;
-    } else if (transaction.description.toLowerCase().contains('food')) {
-      backgroundColor = Colors.red.shade100;
-      icon = Icons.restaurant;
-      iconColor = Colors.red;
-    } else if (transaction.description.toLowerCase().contains('salary')) {
-      backgroundColor = Colors.green.shade100;
-      icon = Icons.account_balance_wallet;
-      iconColor = Colors.green;
-    } else if (transaction.description.toLowerCase().contains('transport')) {
-      backgroundColor = Colors.blue.shade100;
-      icon = Icons.directions_car;
-      iconColor = Colors.blue;
-    } else {
-      backgroundColor = Colors.grey.shade100;
-      icon = Icons.attach_money;
-      iconColor = Colors.grey;
-    }
-
+  Widget _buildTimePeriodTabs() {
+    final tabs = ['Today', 'Week', 'Month', 'Year'];
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        icon,
-        color: iconColor,
-        size: 24,
+      height: 40,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: tabs.length,
+        itemBuilder: (context, index) {
+          final isSelected = _selectedTabIndex == index;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedTabIndex = index;
+                _applyFilters();
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.orange.shade100 : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
+                child: Text(
+                  tabs[index],
+                  style: TextStyle(
+                    color: isSelected ? Colors.orange.shade700 : Colors.grey.shade600,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildDateHeader(DateTime date) {
-    final now = DateTime.now();
-    final yesterday = DateTime(now.year, now.month, now.day - 1);
-    final transactionDate = DateTime(date.year, date.month, date.day);
+  Widget _buildTransactionItem(Transaction transaction) {
+    IconData icon;
+    Color iconColor;
+    Color backgroundColor;
 
-    String headerText;
-    if (transactionDate == DateTime(now.year, now.month, now.day)) {
-      headerText = 'Today';
-    } else if (transactionDate == yesterday) {
-      headerText = 'Yesterday';
+    if (transaction.description.toLowerCase().contains('shopping')) {
+      icon = Icons.shopping_bag_outlined;
+      iconColor = Colors.orange;
+      backgroundColor = Colors.orange.shade50;
+    } else if (transaction.description.toLowerCase().contains('subscription')) {
+      icon = Icons.subscriptions_outlined;
+      iconColor = Colors.purple;
+      backgroundColor = Colors.purple.shade50;
+    } else if (transaction.description.toLowerCase().contains('food')) {
+      icon = Icons.restaurant_outlined;
+      iconColor = Colors.pink;
+      backgroundColor = Colors.pink.shade50;
     } else {
-      headerText = DateFormat('MMMM d').format(date);
+      icon = Icons.account_balance_wallet_outlined;
+      iconColor = Colors.blue;
+      backgroundColor = Colors.blue.shade50;
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-      child: Text(
-        headerText,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  transaction.description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${transaction.type == TransactionType.withdrawal ? "- " : "+ "}${transaction.formattedAmount}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: transaction.type == TransactionType.withdrawal
+                      ? Colors.red
+                      : Colors.green,
+                ),
+              ),
+              Text(
+                DateFormat('hh:mm a').format(transaction.date),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    Map<String, List<Transaction>> groupedTransactions = {};
-
-    for (var transaction in _filteredTransactions) {
-      final date = DateFormat('yyyy-MM-dd').format(transaction.date);
-      groupedTransactions.putIfAbsent(date, () => []);
-      groupedTransactions[date]!.add(transaction);
-    }
-
-    final sortedDates = groupedTransactions.keys.toList()..sort((a, b) => b.compareTo(a));
-
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildTimePeriodTabs(),
+        const SizedBox(height: 24),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              DropdownButton<String>(
-                value: 'Month',
-                items: ['Month'].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (_) {},
+              const Text(
+                'Recent Transaction',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.filter_list),
-                onPressed: _showFilterSheet,
+              TextButton(
+                onPressed: widget.onViewAll,
+                child: Text(
+                  'See All',
+                  style: TextStyle(
+                    color: Colors.purple.shade400,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
         ),
-        InkWell(
-          onTap: () {
-            // TODO: Navigate to financial report
-          },
-          child: Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.purple.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'See your financial report',
-                  style: TextStyle(
-                    color: Colors.purple.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
+        const SizedBox(height: 8),
+        if (_filteredTransactions.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                'No transactions found',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 16,
                 ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.purple.shade700,
-                ),
-              ],
+              ),
             ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _filteredTransactions.length,
+            itemBuilder: (context, index) => _buildTransactionItem(_filteredTransactions[index]),
           ),
-        ),
-        for (String date in sortedDates) ...[
-          _buildDateHeader(DateTime.parse(date)),
-          ...groupedTransactions[date]!.map((transaction) => ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            leading: _buildTransactionIcon(transaction),
-            title: Text(
-              transaction.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                Text(
-                  DateFormat('hh:mm a').format(transaction.date),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-              ],
-            ),
-            trailing: Text(
-              '${transaction.type == TransactionType.withdrawal ? "- " : "+ "}${transaction.formattedAmount}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: transaction.type == TransactionType.withdrawal
-                    ? Colors.red
-                    : Colors.green,
-              ),
-            ),
-          )),
-        ],
       ],
     );
   }
