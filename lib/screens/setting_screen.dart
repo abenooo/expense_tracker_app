@@ -1,15 +1,16 @@
-import 'package:ethiopian_bank_tracker/screens/setting/language_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'base_screen.dart';
+import 'setting/language_screen.dart';
 
-class LocationScreen extends StatefulWidget {
-  const LocationScreen({Key? key}) : super(key: key);
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
-  State<LocationScreen> createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<LocationScreen> {
+class _SettingsScreenState extends State<SettingsScreen> {
   bool isDarkMode = false;
   bool isNotificationsEnabled = true;
   bool isBiometricsEnabled = true;
@@ -174,24 +175,9 @@ class _SettingsScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(CupertinoIcons.back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return BaseScreen(
+      currentIndex: 3,
+      title: 'Settings',
       body: ListView(
         children: [
           _buildProfileSection(),
@@ -200,28 +186,20 @@ class _SettingsScreenState extends State<LocationScreen> {
             title: 'Currency',
             icon: CupertinoIcons.money_dollar_circle_fill,
             iconColor: Colors.green,
-            value: 'USD',
+            value: 'ETB',
           ),
-          // _buildSettingItem(
-          //   title: 'Language',
-          //   icon: CupertinoIcons.globe,
-          //   iconColor: Colors.blue,
-          //   value: 'English',
-          // ),
-
-// Usage:
           _buildSettingItem(
-              title: 'Language',
-              icon: CupertinoIcons.globe,
-              iconColor: Colors.blue,
-              value: 'English',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LanguageScreen()),
-                );
-              }),
-
+            title: 'Language',
+            icon: CupertinoIcons.globe,
+            iconColor: Colors.blue,
+            value: 'English',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LanguageScreen()),
+              );
+            },
+          ),
           _buildSettingItem(
             title: 'Theme',
             subtitle: 'Dark mode helps reduce eye strain',
@@ -238,7 +216,7 @@ class _SettingsScreenState extends State<LocationScreen> {
             title: 'Biometric Authentication',
             icon: CupertinoIcons.person_crop_circle_fill_badge_checkmark,
             iconColor: Colors.red,
-            showToggle: true,
+            showToggle: false,
             toggleValue: isBiometricsEnabled,
             onToggleChanged: (value) {
               setState(() => isBiometricsEnabled = value);
@@ -260,60 +238,9 @@ class _SettingsScreenState extends State<LocationScreen> {
               setState(() => isNotificationsEnabled = value);
             },
           ),
-          _buildSettingItem(
-            title: 'Email Notifications',
-            icon: CupertinoIcons.mail_solid,
-            iconColor: Colors.red,
-            showToggle: true,
-            toggleValue: true,
-            onToggleChanged: (value) {},
-          ),
-          _buildSectionHeader('ABOUT'),
-          _buildSettingItem(
-            title: 'App Version',
-            icon: CupertinoIcons.info_circle_fill,
-            iconColor: Colors.grey,
-            value: '2.0.1',
-          ),
-          _buildSettingItem(
-            title: 'Terms of Service',
-            icon: CupertinoIcons.doc_text_fill,
-            iconColor: Colors.blue,
-          ),
-          _buildSettingItem(
-            title: 'Privacy Policy',
-            icon: CupertinoIcons.shield_fill,
-            iconColor: Colors.green,
-          ),
-          _buildSettingItem(
-            title: 'Help & Support',
-            icon: CupertinoIcons.question_circle_fill,
-            iconColor: Colors.orange,
-          ),
-          const SizedBox(height: 40),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Sign Out',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
         ],
       ),
     );
   }
 }
+
