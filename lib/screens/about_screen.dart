@@ -191,24 +191,12 @@ class _SettingsScreenState extends State<AboutScreen> {
             iconColor:
                 Colors.blueAccent, // Slightly different shade for distinction
             value: 'CodeX',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LanguageScreen()),
-              );
-            },
           ),
           _buildSettingItem(
             title: 'LinkedIn',
             icon: CupertinoIcons.link_circle_fill, // More suitable for LinkedIn
             iconColor: Colors.blueGrey, // Reflects LinkedIn's branding
             value: 'CodeX',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LanguageScreen()),
-              );
-            },
           ),
           _buildSectionHeader('MORE'),
           _buildSettingItem(
