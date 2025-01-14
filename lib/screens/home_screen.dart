@@ -2,12 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
-import '../models/financial_account.dart';
-import '../models/transaction.dart';
-import '../models/transaction_type.dart';
-import '../models/bank_type.dart';
+import '../models/bank_account.dart';
+import '../services/bank_service.dart';
 import 'base_screen.dart';
-import "../widgets/transaction_tabs.dart";
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,50 +12,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<FinancialAccount> _accounts = [];
+  final BankService _bankService = BankService();
+  List<BankAccount> _accounts = [];
   bool _isLoading = true;
   String? _error;
+  bool _hideBalance = false;
   int _currentCardIndex = 0;
-  int _selectedTabIndex = 0;
-
-  List<Transaction> get sampleTransactions => [
-        Transaction(
-          amount: 120.00,
-          type: TransactionType.withdrawal,
-          date: DateTime(2024, 1, 11, 10, 0),
-          description: 'Buy some grocery',
-          bankType: BankType.cbe,
-          accountNumber: '1234',
-          subtitle: 'Shopping',
-          icon: Icons.shopping_bag_outlined,
-          iconColor: Colors.orange,
-          iconBackground: Color(0xFFFFF3E0),
-        ),
-        Transaction(
-          amount: 80.00,
-          type: TransactionType.withdrawal,
-          date: DateTime(2024, 1, 11, 15, 30),
-          description: 'Disney+ Annual..',
-          bankType: BankType.cbe,
-          accountNumber: '1234',
-          subtitle: 'Subscription',
-          icon: Icons.subscriptions_outlined,
-          iconColor: Colors.purple,
-          iconBackground: Color(0xFFF3E5F5),
-        ),
-        Transaction(
-          amount: 32.00,
-          type: TransactionType.withdrawal,
-          date: DateTime(2024, 1, 11, 19, 30),
-          description: 'Buy a ramen',
-          bankType: BankType.cbe,
-          accountNumber: '1234',
-          subtitle: 'Food',
-          icon: Icons.restaurant_outlined,
-          iconColor: Colors.pink,
-          iconBackground: Color(0xFFFCE4EC),
-        ),
-      ];
 
   final currencyFormatter = NumberFormat.currency(
     locale: 'en_US',
@@ -67,76 +26,179 @@ class _HomeScreenState extends State<HomeScreen> {
     customPattern: '¤ #,##0.00',
   );
 
-  void _handleTabChange(int index) {
-    setState(() {
-      _selectedTabIndex = index;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadAccounts();
   }
 
-  List<Widget> _buildDemoCards() {
-    return List.generate(5, (index) {
-      return Container(
-        width: MediaQuery.of(context).size.width,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Card(
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.blue,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
+  Future<void> _loadAccounts() async {
+    try {
+      final accounts = await _bankService.getBankAccounts();
+      setState(() {
+        _accounts = accounts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Color _getBankColor(String bankName) {
+    switch (bankName) {
+      case 'Commercial Bank of Ethiopia':
+        return Color(0xFF1E3F66);
+      case 'Commercial Bank of Ethiopia Birr':
+        return Color(0xFF1E3F66);
+      case 'Bank of Abyssinia':
+        return Color(0xFF662D91);
+      case 'Dashen Bank':
+        return Color(0xFF00AEEF);
+      case 'Hibret Bank':
+        return Color(0xFF00A651);
+      case 'Telebirr':
+        return Color(0xFF4CAF50);
+      case 'Awash Bank':
+        return Color(0xFFFBB040);
+      case 'M-PESA':
+        return Color(0xFF00AFF0);
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
+  String _formatAccountNumber(String number) {
+    if (number.length < 4) return number;
+    return number.replaceAll(RegExp(r'\d(?=\d{4})'), '*');
+  }
+
+  Widget _buildAccountCards() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_error!, style: TextStyle(color: Colors.red)),
+            ElevatedButton(
+              onPressed: _loadAccounts,
+              child: Text('Retry'),
             ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ],
+        ),
+      );
+    }
+
+    if (_accounts.isEmpty) {
+      return const Center(
+        child: Text('No bank accounts found. Please check your SMS messages.'),
+      );
+    }
+
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      height: 200,
+      child: FlutterCarousel.builder(
+        itemCount: _accounts.length,
+        itemBuilder: (context, index, realIndex) {
+          final account = _accounts[index];
+          return Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Card(
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _getBankColor(account.bankName),
+                      _getBankColor(account.bankName).withOpacity(0.7),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          account.bankName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() => _hideBalance = !_hideBalance);
+                          },
+                          child: Icon(
+                            _hideBalance ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                     Text(
-                      'Card ${index + 1}',
+                      _formatAccountNumber(account.accountNumber),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
+                        color: Colors.white70,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _hideBalance
+                          ? '****'
+                          : currencyFormatter.format(account.balance),
+                      style: TextStyle(
+                        color: account.balance < 0 ? Colors.red : Colors.white,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Icon(Icons.credit_card, color: Colors.white),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Last updated: ${DateFormat('MMM d, y h:mm a').format(account.lastUpdated)}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  '**** **** **** ${(1000 + index).toString()}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  currencyFormatter.format(10000 * (index + 1)),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          );
+        },
+        options: CarouselOptions(
+          viewportFraction: 1.0,
+          enlargeCenterPage: false,
+          enableInfiniteScroll: true,
+          padEnds: false,
+          onPageChanged: (index, reason) {
+            setState(() => _currentCardIndex = index);
+          },
         ),
-      );
-    });
+      ),
+    );
   }
 
   Widget _buildMenuGrid() {
@@ -212,138 +274,52 @@ class _HomeScreenState extends State<HomeScreen> {
     return BaseScreen(
       currentIndex: 0,
       title: 'Home',
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: 200,
-              child: FlutterCarousel.builder(
-                itemCount: 5,
-                itemBuilder: (context, index, realIndex) {
-                  return _buildDemoCards()[index];
-                },
-                options: CarouselOptions(
-                  viewportFraction: 1.0,
-                  enlargeCenterPage: false,
-                  enableInfiniteScroll: true,
-                  padEnds: false,
-                  onPageChanged: (index, reason) {
-                    setState(() => _currentCardIndex = index);
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildMenuGrid(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Recent Transaction',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.shade50,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'See All',
-                      style: TextStyle(
-                        color: Colors.purple,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: sampleTransactions.length,
-              itemBuilder: (context, index) {
-                final transaction = sampleTransactions[index];
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      body: RefreshIndicator(
+        onRefresh: _loadAccounts,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              _buildAccountCards(),
+              const SizedBox(height: 16),
+              _buildMenuGrid(),
+              const SizedBox(height: 16),
+              if (!_isLoading && _accounts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      const Text(
+                        'Recent Transactions',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Container(
-                        width: 48,
-                        height: 48,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: transaction.iconBackground,
-                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.purple.shade50,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Icon(
-                          transaction.icon,
-                          color: transaction.iconColor,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              transaction.subtitle,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              transaction.description,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '- \$${transaction.amount.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red,
-                            ),
+                        child: const Text(
+                          'See All',
+                          style: TextStyle(
+                            color: Colors.purple,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            DateFormat('hh:mm a').format(transaction.date),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
-                );
-              },
-            ),
-          ],
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
