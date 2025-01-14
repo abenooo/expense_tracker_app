@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
@@ -47,28 +46,59 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Color _getBankColor(String bankName) {
+   LinearGradient _getBankGradient(String bankName) {
     switch (bankName) {
       case 'Commercial Bank of Ethiopia':
-        return Color(0xFF1E3F66);
-      case 'Commercial Bank of Ethiopia Birr':
-        return Color(0xFF1E3F66);
+        return const LinearGradient(
+          colors: [Color(0xFF8E258B), Color(0xFFDDA0DD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Purple gradient
       case 'Bank of Abyssinia':
-        return Color(0xFF662D91);
+        return const LinearGradient(
+          colors: [Color(0xFFEAA613), Color(0xFFFFD700)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Golden gradient
       case 'Dashen Bank':
-        return Color(0xFF00AEEF);
+        return const LinearGradient(
+          colors: [Color(0xFF253171), Color(0xFF1B1F3A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Blue gradient
       case 'Hibret Bank':
-        return Color(0xFF00A651);
+        return const LinearGradient(
+          colors: [Color(0xFF05ABA8), Color(0xFF20C4C1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Teal gradient
       case 'Telebirr':
-        return Color(0xFF4CAF50);
+        return const LinearGradient(
+          colors: [Color(0xFF0795D7), Color(0xFF89CFF0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Sky blue gradient
       case 'Awash Bank':
-        return Color(0xFFFBB040);
+        return const LinearGradient(
+          colors: [Color(0xFF061A57), Color(0xFF142F6E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Navy blue gradient
       case 'M-PESA':
-        return Color(0xFF00AFF0);
+        return const LinearGradient(
+          colors: [Color(0xFF12AE20), Color(0xFF3EDD3E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Green gradient
       default:
-        return Colors.blueGrey;
+        return const LinearGradient(
+          colors: [Colors.blueGrey, Colors.grey],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ); // Default gradient
     }
   }
+
 
   String _formatAccountNumber(String number) {
     if (number.length < 4) return number;
@@ -85,10 +115,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_error!, style: TextStyle(color: Colors.red)),
+            Text(_error!, style: const TextStyle(color: Colors.red)),
             ElevatedButton(
               onPressed: _loadAccounts,
-              child: Text('Retry'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -118,16 +148,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _getBankColor(account.bankName),
-                      _getBankColor(account.bankName).withOpacity(0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: _getBankGradient(account.bankName),
                   borderRadius: BorderRadius.circular(20),
                 ),
+
+                //   borderRadius: BorderRadius.circular(20),
+                // ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -149,7 +175,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             setState(() => _hideBalance = !_hideBalance);
                           },
                           child: Icon(
-                            _hideBalance ? Icons.visibility_off : Icons.visibility,
+                            _hideBalance
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white,
                           ),
                         ),
@@ -299,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.purple.shade50,
                           borderRadius: BorderRadius.circular(20),
@@ -322,4 +351,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
