@@ -29,7 +29,7 @@ class BaseScreen extends StatelessWidget {
         centerTitle: true,
       ),
       drawer: _buildDrawer(context),
-      body: body, 
+      body: body,
       extendBody: true,
       bottomNavigationBar: _buildCurvedNavigationBar(context),
     );
@@ -192,14 +192,14 @@ class BaseScreen extends StatelessWidget {
       child: CurvedNavigationBar(
         index: currentIndex,
         height: 60.0,
-       items: const [
-  Icon(Icons.home, size: 30), // Home icon remains unchanged
-  Icon(Icons.account_balance_wallet, size: 30), // Transaction (account balance wallet)
-  Icon(Icons.bar_chart, size: 30), // Report (chart or analytics icon)
-  Icon(Icons.settings, size: 30), // Settings icon remains unchanged
-  Icon(Icons.info, size: 30), // About Us (info icon for about section)
-],
-
+        items: const [
+          Icon(Icons.home, size: 30), // Home icon
+          Icon(Icons.account_balance_wallet,
+              size: 30), // Transaction (account balance wallet)
+          Icon(Icons.bar_chart, size: 30), // Report (chart or analytics icon)
+          Icon(Icons.settings, size: 30), // Settings icon
+          Icon(Icons.info, size: 30), // About Us (info icon for about section)
+        ],
         color: Colors.green,
         buttonBackgroundColor: Colors.green,
         backgroundColor: Colors.transparent,
