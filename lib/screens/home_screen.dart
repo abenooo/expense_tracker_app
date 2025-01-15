@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../models/bank_account.dart';
 import '../services/bank_service.dart';
 import 'base_screen.dart';
@@ -46,59 +47,58 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-   LinearGradient _getBankGradient(String bankName) {
+  LinearGradient _getBankGradient(String bankName) {
     switch (bankName) {
       case 'Commercial Bank of Ethiopia':
         return const LinearGradient(
           colors: [Color(0xFF8E258B), Color(0xFFDDA0DD)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Purple gradient
+        );
       case 'Bank of Abyssinia':
         return const LinearGradient(
           colors: [Color(0xFFEAA613), Color(0xFFFFD700)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Golden gradient
+        );
       case 'Dashen Bank':
         return const LinearGradient(
           colors: [Color(0xFF253171), Color(0xFF1B1F3A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Blue gradient
+        );
       case 'Hibret Bank':
         return const LinearGradient(
           colors: [Color(0xFF05ABA8), Color(0xFF20C4C1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Teal gradient
+        );
       case 'Telebirr':
         return const LinearGradient(
           colors: [Color(0xFF0795D7), Color(0xFF89CFF0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Sky blue gradient
+        );
       case 'Awash Bank':
         return const LinearGradient(
           colors: [Color(0xFF061A57), Color(0xFF142F6E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Navy blue gradient
+        );
       case 'M-PESA':
         return const LinearGradient(
           colors: [Color(0xFF12AE20), Color(0xFF3EDD3E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Green gradient
+        );
       default:
         return const LinearGradient(
           colors: [Colors.blueGrey, Colors.grey],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ); // Default gradient
+        );
     }
   }
-
 
   String _formatAccountNumber(String number) {
     if (number.length < 4) return number;
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAccountCards() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildSkeletonCarousel();
     }
 
     if (_error != null) {
@@ -138,83 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: _accounts.length,
         itemBuilder: (context, index, realIndex) {
           final account = _accounts[index];
-          return Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: _getBankGradient(account.bankName),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-
-                //   borderRadius: BorderRadius.circular(20),
-                // ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          account.bankName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() => _hideBalance = !_hideBalance);
-                          },
-                          child: Icon(
-                            _hideBalance
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      _formatAccountNumber(account.accountNumber),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _hideBalance
-                          ? '****'
-                          : currencyFormatter.format(account.balance),
-                      style: TextStyle(
-                        color: account.balance < 0 ? Colors.red : Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Last updated: ${DateFormat('MMM d, y h:mm a').format(account.lastUpdated)}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          return _buildAccountCard(account);
         },
         options: CarouselOptions(
           viewportFraction: 1.0,
@@ -224,6 +148,151 @@ class _HomeScreenState extends State<HomeScreen> {
           onPageChanged: (index, reason) {
             setState(() => _currentCardIndex = index);
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(BankAccount account) {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: _getBankGradient(account.bankName),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    account.bankName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _hideBalance = !_hideBalance);
+                    },
+                    child: Icon(
+                      _hideBalance ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                _formatAccountNumber(account.accountNumber),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _hideBalance ? '****' : currencyFormatter.format(account.balance),
+                style: TextStyle(
+                  color: account.balance < 0 ? Colors.red : Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'Last updated: ${DateFormat('MMM d, y h:mm a').format(account.lastUpdated)}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCarousel() {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      height: 200,
+      child: FlutterCarousel.builder(
+        itemCount: 3,
+        itemBuilder: (context, index, realIndex) {
+          return _buildSkeletonCard();
+        },
+        options: CarouselOptions(
+          viewportFraction: 1.0,
+          enlargeCenterPage: false,
+          enableInfiniteScroll: true,
+          padEnds: false,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Card(
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 150,
+                  height: 24,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: 100,
+                  height: 18,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: 200,
+                  height: 28,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 5),
+                Container(
+                  width: 150,
+                  height: 12,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -327,8 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.purple.shade50,
                           borderRadius: BorderRadius.circular(20),
@@ -351,3 +419,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
