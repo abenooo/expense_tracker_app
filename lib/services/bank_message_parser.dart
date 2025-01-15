@@ -10,8 +10,8 @@ class BankMessageParser {
       'icon': Icons.account_balance
     },
     'CBEBirr': {
-      'name': 'Commercial Bank of Ethiopia Birr',
-      'icon': Icons.account_balance
+      'name': 'CBE Birr',
+      'icon': Icons.account_balance_wallet
     },
     'BOA': {
       'name': 'Bank of Abyssinia',
@@ -33,43 +33,102 @@ class BankMessageParser {
       'name': 'Hibret Bank',
       'icon': Icons.account_balance
     },
-    'HibretBank': {
-      'name': 'Hibret Bank',
-      'icon': Icons.account_balance
-    },
     'MPESA': {
       'name': 'M-PESA',
       'icon': Icons.phone_android
     },
   };
 
-  static BankAccount? parseMessage(SmsMessage message) {
+  static List<BankAccount> parseMessages(List<SmsMessage> messages) {
+    Map<String, BankAccount> latestAccounts = {};
+
+    for (var message in messages) {
+      final account = _parseSingleMessage(message);
+      if (account != null) {
+        final key = _getAccountKey(account);
+        if (!latestAccounts.containsKey(key) ||
+            account.lastUpdated.isAfter(latestAccounts[key]!.lastUpdated)) {
+          latestAccounts[key] = account;
+        }
+      }
+    }
+
+    // Filter out accounts with zero balance for CBE Bank
+    return latestAccounts.values.where((account) => 
+      account.bankName != 'Commercial Bank of Ethiopia' || account.balance != 0
+    ).toList();
+  }
+
+  static String _getAccountKey(BankAccount account) {
+    if (account.bankName == 'CBE Birr' || account.bankName == 'Telebirr') {
+      return account.bankName;
+    } else if (account.bankName == 'Commercial Bank of Ethiopia') {
+      // Use the full account number as the key for CBE Bank accounts
+      return '${account.bankName}_${account.accountNumber}';
+    } else {
+      return '${account.bankName}_${account.accountNumber}';
+    }
+  }
+
+  static BankAccount? _parseSingleMessage(SmsMessage message) {
     final sender = message.sender ?? '';
     final body = message.body ?? '';
-    
+
     String? bankName;
     IconData? bankIcon;
     for (var entry in _bankCodes.entries) {
       if (sender.contains(entry.key) || body.contains(entry.key)) {
         bankName = entry.value['name'];
         bankIcon = entry.value['icon'];
-        // Special case for CBE and CBEBirr
-        if (entry.key == 'CBEBirr' || (entry.key == 'CBE' && body.contains('CBE Birr'))) {
-          bankName = 'Commercial Bank of Ethiopia Birr';
-        } else if (entry.key == 'CBE') {
-          bankName = 'Commercial Bank of Ethiopia';
-        }
         break;
       }
     }
-    
+
     if (bankName == null) return null;
 
     String accountNumber = '';
     double balance = 0.0;
     DateTime? lastUpdated;
 
-    if (bankName == 'Awash Bank') {
+    if (bankName == 'Commercial Bank of Ethiopia') {
+      if (body.contains('CBE Birr')) {
+        bankName = 'CBE Birr';
+        final balanceMatch = RegExp(r'CBE Birr account balance is ([-\d,.]+)').firstMatch(body);
+        balance = _parseBalance(balanceMatch?.group(1));
+        accountNumber = 'CBE Birr Account';
+      } else {
+        final accountMatch = RegExp(r'Account (\d+)').firstMatch(body);
+        accountNumber = accountMatch?.group(1) ?? '';
+        final balanceMatch = RegExp(r'Current Balance is ETB ([-\d,.]+)').firstMatch(body);
+        balance = _parseBalance(balanceMatch?.group(1));
+      }
+      lastUpdated = message.date;
+    } else if (bankName == 'Bank of Abyssinia') {
+      final accountMatch = RegExp(r'your account (\d+\*\d+)').firstMatch(body);
+      accountNumber = accountMatch?.group(1) ?? '';
+      final balanceMatch = RegExp(r'available balance in the account is ETB ([-\d,.]+)').firstMatch(body);
+      balance = _parseBalance(balanceMatch?.group(1));
+      final dateMatch = RegExp(r'on (\d{2}/\d{2}/\d{4})').firstMatch(body);
+      if (dateMatch != null) {
+        lastUpdated = DateFormat('dd/MM/yyyy').parse(dateMatch.group(1)!);
+      } else {
+        lastUpdated = message.date;
+      }
+    } else if (bankName == 'Telebirr') {
+      final customerIncentiveMatch = RegExp(r'Customer Incentive Account Balance is : ETB ([-\d,.]+)').firstMatch(body);
+      final eMoneyMatch = RegExp(r'E-Money Account Balance is : ETB ([-\d,.]+)').firstMatch(body);
+      final oldFormatMatch = RegExp(r'Your current balance is ETB ([-\d,.]+)').firstMatch(body);
+
+      if (customerIncentiveMatch != null && eMoneyMatch != null) {
+        double customerIncentiveBalance = _parseBalance(customerIncentiveMatch.group(1));
+        double eMoneyBalance = _parseBalance(eMoneyMatch.group(1));
+        balance = customerIncentiveBalance + eMoneyBalance;
+      } else if (oldFormatMatch != null) {
+        balance = _parseBalance(oldFormatMatch.group(1));
+      }
+      accountNumber = 'Telebirr Account';
+      lastUpdated = message.date;
+    } else if (bankName == 'Awash Bank') {
       final accountMatch = RegExp(r'Account (\d+\*+\d+)').firstMatch(body);
       accountNumber = accountMatch?.group(1) ?? '';
       final balanceMatch = RegExp(r'Your balance now is ETB ([-\d,.]+)').firstMatch(body);
@@ -78,44 +137,6 @@ class BankMessageParser {
       if (dateMatch != null) {
         lastUpdated = DateFormat('yyyy-MM-dd HH:mm:ss').parse(dateMatch.group(1)!);
       }
-    } else if (bankName == 'Commercial Bank of Ethiopia') {
-      final accountMatch = RegExp(r'Account (\d+\*+\d+)').firstMatch(body);
-      accountNumber = accountMatch?.group(1) ?? '';
-      final balanceMatch = RegExp(r'Current Balance is ETB ([-\d,.]+)').firstMatch(body);
-      balance = _parseBalance(balanceMatch?.group(1));
-      lastUpdated = message.date;
-    } else if (bankName == 'Commercial Bank of Ethiopia Birr') {
-      final balanceMatch = RegExp(r'CBE Birr account balance is ([-\d,.]+)').firstMatch(body);
-      balance = _parseBalance(balanceMatch?.group(1));
-      final accountMatch = RegExp(r'for (\d+)').firstMatch(body);
-      accountNumber = accountMatch?.group(1) ?? 'CBE Birr Account';
-      lastUpdated = message.date;
-    } else if (bankName == 'Bank of Abyssinia') {
-      final boaAccountMatch = RegExp(r'your account (\d+\*\d+)').firstMatch(body);
-      final accountMatch = RegExp(r'account (\d+\*\d+)').firstMatch(body);
-      accountNumber = accountMatch?.group(1) ?? boaAccountMatch?.group(1) ?? '';
-      final balanceMatch = RegExp(r'available balance in the account is ETB ([-\d,.]+)').firstMatch(body);
-      balance = _parseBalance(balanceMatch?.group(1));
-      final dateMatch = RegExp(r'on (\d{2}/\d{2}/\d{4})').firstMatch(body);
-      if (dateMatch != null) {
-        lastUpdated = DateFormat('dd/MM/yyyy').parse(dateMatch.group(1)!);
-      }
-    } else if (bankName == 'Telebirr') {
-      final customerIncentiveMatch = RegExp(r'Customer Incentive Account Balance is : ETB ([-\d,.]+)').firstMatch(body);
-      final eMoneyMatch = RegExp(r'E-Money Account Balance is : ETB ([-\d,.]+)').firstMatch(body);
-      final oldFormatMatch = RegExp(r'Your current balance is ETB ([-\d,.]+)').firstMatch(body);
-      
-      if (customerIncentiveMatch != null && eMoneyMatch != null) {
-        double customerIncentiveBalance = _parseBalance(customerIncentiveMatch.group(1));
-        double eMoneyBalance = _parseBalance(eMoneyMatch.group(1));
-        balance = customerIncentiveBalance + eMoneyBalance;
-        accountNumber = 'Telebirr Account';
-      } else if (oldFormatMatch != null) {
-        balance = _parseBalance(oldFormatMatch.group(1));
-        final accountMatch = RegExp(r'telebirr account (\d+)').firstMatch(body);
-        accountNumber = accountMatch?.group(1) ?? 'Telebirr Account';
-      }
-      lastUpdated = message.date;
     } else if (bankName == 'Hibret Bank') {
       final accountMatch = RegExp(r'Account No : (\d+)').firstMatch(body);
       accountNumber = accountMatch?.group(1) ?? '';
@@ -154,8 +175,7 @@ class BankMessageParser {
 
   static double _parseBalance(String? balanceString) {
     if (balanceString == null) return 0.0;
-    final cleanedString = balanceString.replaceAll(RegExp(r'[^\d.-]'), '');
+    final cleanedString = balanceString.replaceAll(RegExp(r'[^‌\d.-]'), '');
     return double.tryParse(cleanedString) ?? 0.0;
   }
 }
-

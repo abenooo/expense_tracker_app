@@ -31,19 +31,7 @@ class BankService {
       count: 100,
     );
 
-    final Map<String, BankAccount> latestAccounts = {};
-    
-    for (var message in messages) {
-      final account = BankMessageParser.parseMessage(message);
-      if (account != null) {
-        final key = '${account.bankName}_${account.accountNumber}';
-        if (!latestAccounts.containsKey(key) ||
-            latestAccounts[key]!.lastUpdated.isBefore(account.lastUpdated)) {
-          latestAccounts[key] = account;
-        }
-      }
-    }
-
-    return latestAccounts.values.toList();
+    return BankMessageParser.parseMessages(messages);
   }
 }
+
