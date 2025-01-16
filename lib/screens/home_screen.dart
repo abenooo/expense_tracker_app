@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<BankAccount> _accounts = [];
   bool _isLoading = true;
   String? _error;
-  bool _hideBalance = false;
+  bool _hideBalance = true;
   int _currentCardIndex = 0;
   //late final FlutterLocalNotificationsPlugin _notificationsPlugin;
 
@@ -48,18 +48,26 @@ class _HomeScreenState extends State<HomeScreen> {
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.high,
+      importance: Importance.max,
       priority: Priority.high,
+      showWhen: true,
+      enableVibration: true,
+      playSound: true,
     );
+
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await widget.notificationsPlugin!.show(
-      0,
-      'Welcome to Ethiopian Bank Tracker',
-      'Track your finances with ease!',
-      platformChannelSpecifics,
-    );
+    try {
+      await widget.notificationsPlugin!.show(
+        0,
+        'Welcome to Expense Tracker App',
+        'Track your finances with ease!',
+        platformChannelSpecifics,
+      );
+    } catch (e) {
+      debugPrint('Error showing notification: $e');
+    }
   }
 
   Future<void> _loadAccounts() async {
