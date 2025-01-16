@@ -5,8 +5,13 @@ import 'package:shimmer/shimmer.dart';
 import '../models/bank_account.dart';
 import '../services/bank_service.dart';
 import 'base_screen.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class HomeScreen extends StatefulWidget {
+  final FlutterLocalNotificationsPlugin? notificationsPlugin;
+
+  const HomeScreen({Key? key, this.notificationsPlugin}) : super(key: key);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -18,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   bool _hideBalance = false;
   int _currentCardIndex = 0;
+  //late final FlutterLocalNotificationsPlugin _notificationsPlugin;
 
   final currencyFormatter = NumberFormat.currency(
     locale: 'en_US',
@@ -29,7 +35,31 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    //_notificationsPlugin = widget.notificationsPlugin;
     _loadAccounts();
+    _scheduleNotification();
+  }
+
+  Future<void> _scheduleNotification() async {
+    if (widget.notificationsPlugin == null) return;
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'high_importance_channel',
+      'High Importance Notifications',
+      channelDescription: 'This channel is used for important notifications.',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await widget.notificationsPlugin!.show(
+      0,
+      'Welcome to Ethiopian Bank Tracker',
+      'Track your finances with ease!',
+      platformChannelSpecifics,
+    );
   }
 
   Future<void> _loadAccounts() async {
@@ -204,7 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                _hideBalance ? '****' : currencyFormatter.format(account.balance),
+                _hideBalance
+                    ? '******'
+                    : currencyFormatter.format(account.balance),
                 style: TextStyle(
                   color: account.balance < 0 ? Colors.red : Colors.white,
                   fontSize: 28,
@@ -396,7 +428,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.purple.shade50,
                           borderRadius: BorderRadius.circular(20),
@@ -419,4 +452,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
