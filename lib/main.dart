@@ -9,8 +9,12 @@ import 'theme.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> initNotifications() async {
+  // Request permission for Android
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
 
   // Initialize notifications
   const AndroidInitializationSettings androidInitializationSettings =
@@ -25,6 +29,7 @@ void main() async {
     onDidReceiveNotificationResponse:
         (NotificationResponse notificationResponse) {
       // Handle notification taps here
+      debugPrint('Notification clicked: ${notificationResponse.payload}');
     },
   );
 
@@ -33,13 +38,23 @@ void main() async {
     'high_importance_channel',
     'High Importance Notifications',
     description: 'This channel is used for important notifications.',
-    importance: Importance.high,
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+    showBadge: true,
   );
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notifications
+  await initNotifications();
 
   final localizationService = LocalizationService();
   await localizationService.init();
@@ -55,7 +70,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final FlutterLocalNotificationsPlugin notificationsPlugin;
 
-  const MyApp({required this.notificationsPlugin});
+  const MyApp({super.key, required this.notificationsPlugin});
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +83,11 @@ class MyApp extends StatelessWidget {
           home: HomeScreen(notificationsPlugin: notificationsPlugin),
           locale: localizationService.currentLocale,
           supportedLocales: LocalizationService.supportedLocales,
-          localizationsDelegates: [
+          localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
-              ],
+          ],
         );
       },
     );
