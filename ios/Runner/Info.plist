@@ -3,6 +3,10 @@
 <plist version="1.0">
 <dict>
  <!-- Add these keys for SMS and Privacy permissions -->
+ <key>UIBackgroundModes</key>
+<array>
+    <string>remote-notification</string>
+</array>
     <key>NSAppleMusicUsageDescription</key>
     <string>This app needs access to get bank SMS messages to show your account information.</string>
     <key>NSCalendarsUsageDescription</key>
