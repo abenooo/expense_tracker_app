@@ -1,3 +1,4 @@
+
 import 'package:ethiopian_bank_tracker/screens/about_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -5,17 +6,20 @@ import 'home_screen.dart';
 import 'setting_screen.dart';
 import 'chat_screen.dart';
 import 'notifications_screen.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class BaseScreen extends StatelessWidget {
   final Widget body;
   final int currentIndex;
   final String title;
+  final FlutterLocalNotificationsPlugin? notificationsPlugin;
 
   const BaseScreen({
     Key? key,
     required this.body,
     required this.currentIndex,
     required this.title,
+    this.notificationsPlugin,
   }) : super(key: key);
 
   @override
@@ -193,12 +197,11 @@ class BaseScreen extends StatelessWidget {
         index: currentIndex,
         height: 60.0,
         items: const [
-          Icon(Icons.home, size: 30), // Home icon
-          Icon(Icons.account_balance_wallet,
-              size: 30), // Transaction (account balance wallet)
-          Icon(Icons.bar_chart, size: 30), // Report (chart or analytics icon)
-          Icon(Icons.settings, size: 30), // Settings icon
-          Icon(Icons.info, size: 30), // About Us (info icon for about section)
+          Icon(Icons.home, size: 30),
+          Icon(Icons.account_balance_wallet, size: 30),
+          Icon(Icons.bar_chart, size: 30),
+          Icon(Icons.settings, size: 30),
+          Icon(Icons.info, size: 30),
         ],
         color: Colors.green,
         buttonBackgroundColor: Colors.green,
@@ -211,7 +214,7 @@ class BaseScreen extends StatelessWidget {
           Widget screen;
           switch (index) {
             case 0:
-              screen = HomeScreen();
+              screen = HomeScreen(notificationsPlugin: notificationsPlugin);
               break;
             case 1:
               screen = const NotificationsScreen();
@@ -233,14 +236,11 @@ class BaseScreen extends StatelessWidget {
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => screen,
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 const begin = Offset(1.0, 0.0);
                 const end = Offset.zero;
                 const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end).chain(
-                  CurveTween(curve: curve),
-                );
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                 var offsetAnimation = animation.drive(tween);
                 return SlideTransition(position: offsetAnimation, child: child);
               },
@@ -252,3 +252,4 @@ class BaseScreen extends StatelessWidget {
     );
   }
 }
+
