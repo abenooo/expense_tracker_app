@@ -1,12 +1,12 @@
 name: ethiopian_bank_tracker
 description: A Flutter app for tracking Ethiopian bank accounts and transactions.
 
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
+  sdk: ">=2.19.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -23,6 +23,7 @@ dependencies:
   flutter_carousel_widget: ^2.2.0
   curved_navigation_bar: ^1.0.3
   shimmer: ^2.0.0
+  flutter_local_notifications: ^18.0.1
 
 dev_dependencies:
   flutter_test:
