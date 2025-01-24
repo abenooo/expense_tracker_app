@@ -16,12 +16,25 @@ Future<void> initNotifications() async {
           AndroidFlutterLocalNotificationsPlugin>()
       ?.requestNotificationsPermission();
 
+  // Request permission for iOS
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>()
+      ?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
   // Initialize notifications
   const AndroidInitializationSettings androidInitializationSettings =
       AndroidInitializationSettings('@mipmap/ic_launcher');
+  const DarwinInitializationSettings iOSInitializationSettings =
+      DarwinInitializationSettings();
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: androidInitializationSettings,
+    iOS: iOSInitializationSettings,
   );
 
   await flutterLocalNotificationsPlugin.initialize(
