@@ -351,6 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
       {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
       {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
       {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
+       {'icon': Icons.wifi, 'label': 'Utility', 'color': const Color.fromARGB(255, 17, 18, 12)},
     ];
 
     return Container(
