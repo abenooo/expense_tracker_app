@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import './screens/home_screen.dart';
 import 'services/localization_service.dart';
 import 'theme.dart';
+import 'models/utility.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -66,6 +68,11 @@ Future<void> initNotifications() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Hive
+  await Hive.initFlutter();
+  Hive.registerAdapter(UtilityAdapter());
+  await Hive.openBox<Utility>('utilities');
+
   // Initialize notifications
   await initNotifications();
 
@@ -106,3 +113,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
