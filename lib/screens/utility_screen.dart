@@ -3,7 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/utility.dart';
 import '../services/utility_service.dart';
 import '../constants/utility_constants.dart';
-import 'package:intl/intl.dart';
+import 'utility_detail_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class UtilityScreen extends StatefulWidget {
   final FlutterLocalNotificationsPlugin notificationsPlugin;
@@ -41,10 +42,22 @@ class _UtilityScreenState extends State<UtilityScreen> {
     });
   }
 
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.purple,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Select'),
         backgroundColor: Colors.white,
@@ -71,8 +84,9 @@ class _UtilityScreenState extends State<UtilityScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _utilities.length + 1, // +1 for the add new button
+          : ListView.separated(
+              itemCount: _utilities.length + 1,
+              separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 if (index == _utilities.length) {
                   return _buildAddNewButton();
@@ -84,60 +98,101 @@ class _UtilityScreenState extends State<UtilityScreen> {
   }
 
   Widget _buildUtilityItem(Utility utility) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            UtilityConstants.availableIcons[utility.iconName] ?? Icons.help_outline,
-            color: Colors.purple,
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UtilityDetailScreen(
+                utility: utility,
+                notificationsPlugin: widget.notificationsPlugin,
+                onUpdate: _loadUtilities,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  UtilityConstants.availableIcons[utility.iconName] ??
+                      Icons.help_outline,
+                  color: Colors.purple,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      utility.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      utility.description,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
           ),
         ),
-        title: Text(
-          utility.name,
-          style: const TextStyle(
-            color: Colors.purple,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          utility.description,
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.purple),
-        onTap: () => _showUtilityDialog(utility),
       ),
     );
   }
 
   Widget _buildAddNewButton() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.purple.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(Icons.add, color: Colors.purple),
-        ),
-        title: const Text(
-          'Add New Utility',
-          style: TextStyle(
-            color: Colors.purple,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.purple),
+    return Material(
+      color: Colors.white,
+      child: InkWell(
         onTap: () => _showUtilityDialog(null),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add, color: Colors.purple, size: 20),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'Add New Utility',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.purple,
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -153,30 +208,62 @@ class _UtilityScreenState extends State<UtilityScreen> {
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isEditing ? 'Edit Utility' : 'Add New Utility'),
-        content: SingleChildScrollView(
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                isEditing ? 'Edit Utility' : 'Add New Utility',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              TextField(
-                controller: amountController,
-                decoration: const InputDecoration(labelText: 'Amount'),
-                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: amountController,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.purple,
+                      ),
                       onPressed: () async {
                         final DateTime? picked = await showDatePicker(
                           context: context,
@@ -188,12 +275,17 @@ class _UtilityScreenState extends State<UtilityScreen> {
                           setState(() => startDate = picked);
                         }
                       },
-                      child: Text('Start: ${DateFormat('MM-dd').format(startDate)}'),
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text('Start: ${startDate.toString().substring(0, 10)}'),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.purple,
+                      ),
                       onPressed: () async {
                         final DateTime? picked = await showDatePicker(
                           context: context,
@@ -205,22 +297,28 @@ class _UtilityScreenState extends State<UtilityScreen> {
                           setState(() => endDate = picked);
                         }
                       },
-                      child: Text('End: ${DateFormat('MM-dd').format(endDate)}'),
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text('End: ${endDate.toString().substring(0, 10)}'),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: selectedIcon,
-                decoration: const InputDecoration(labelText: 'Icon'),
+                decoration: InputDecoration(
+                  labelText: 'Icon',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 items: UtilityConstants.availableIcons.entries.map((entry) {
                   return DropdownMenuItem(
                     value: entry.key,
                     child: Row(
                       children: [
-                        Icon(entry.value),
-                        const SizedBox(width: 8),
+                        Icon(entry.value, color: Colors.purple),
+                        const SizedBox(width: 12),
                         Text(entry.key.replaceAll('_', ' ').toUpperCase()),
                       ],
                     ),
@@ -232,48 +330,62 @@ class _UtilityScreenState extends State<UtilityScreen> {
                   }
                 },
               ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final name = nameController.text;
+                      final description = descriptionController.text;
+                      final amount = double.tryParse(amountController.text) ?? 0.0;
+
+                      if (name.isNotEmpty && description.isNotEmpty && amount > 0) {
+                        if (isEditing) {
+                          utility!.name = name;
+                          utility.description = description;
+                          utility.amount = amount;
+                          utility.startDate = startDate;
+                          utility.endDate = endDate;
+                          utility.iconName = selectedIcon;
+                          await _utilityService.updateUtility(utility);
+                          _showToast('${utility.name} updated successfully');
+                        } else {
+                          final newUtility = Utility(
+                            id: '',
+                            name: name,
+                            description: description,
+                            startDate: startDate,
+                            endDate: endDate,
+                            amount: amount,
+                            iconName: selectedIcon,
+                          );
+                          await _utilityService.addUtility(newUtility);
+                          _showToast('$name added successfully');
+                        }
+                        Navigator.pop(context);
+                        _loadUtilities();
+                      }
+                    },
+                    child: Text(isEditing ? 'Update' : 'Add'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = nameController.text;
-              final description = descriptionController.text;
-              final amount = double.tryParse(amountController.text) ?? 0.0;
-              
-              if (name.isNotEmpty && description.isNotEmpty && amount > 0) {
-                if (isEditing) {
-                  utility!.name = name;
-                  utility.description = description;
-                  utility.amount = amount;
-                  utility.startDate = startDate;
-                  utility.endDate = endDate;
-                  utility.iconName = selectedIcon;
-                  await _utilityService.updateUtility(utility);
-                } else {
-                  final newUtility = Utility(
-                    id: '',
-                    name: name,
-                    description: description,
-                    startDate: startDate,
-                    endDate: endDate,
-                    amount: amount,
-                    iconName: selectedIcon,
-                  );
-                  await _utilityService.addUtility(newUtility);
-                }
-                Navigator.pop(context);
-                _loadUtilities();
-              }
-            },
-            child: Text(isEditing ? 'Update' : 'Add'),
-          ),
-        ],
       ),
     );
   }
