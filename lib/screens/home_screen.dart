@@ -1,3 +1,4 @@
+import 'package:ethiopian_bank_tracker/screens/utility_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,13 @@ import '../models/bank_account.dart';
 import '../services/bank_service.dart';
 import 'base_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'income_screen.dart';
+import 'expected_screen.dart';
+import 'expenses_screen.dart';
+import 'saving_screen.dart';
+import 'loans_screen.dart';
+import 'reports_screen.dart';
+import 'debt_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final FlutterLocalNotificationsPlugin? notificationsPlugin;
@@ -338,36 +346,114 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMenuGrid() {
-    final List<Map<String, dynamic>> menuItems = [
-      {
-        'icon': Icons.account_balance_wallet,
-        'label': 'Income',
-        'color': Colors.green
+Widget _buildMenuGrid() {
+  final List<Map<String, dynamic>> menuItems = [
+    {
+      'icon': Icons.account_balance_wallet,
+      'label': 'Income',
+      'color': Colors.green,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => IncomeScreen()), // Replace with your actual screen
+        );
       },
-      {'icon': Icons.trending_up, 'label': 'Expected', 'color': Colors.blue},
-      {'icon': Icons.money_off, 'label': 'Expenses', 'color': Colors.red},
-      {'icon': Icons.savings, 'label': 'Savings', 'color': Colors.purple},
-      {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
-      {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
-      {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
-       {'icon': Icons.wifi, 'label': 'Utility', 'color': const Color.fromARGB(255, 17, 18, 12)},
-    ];
+    },
+    {
+      'icon': Icons.trending_up,
+      'label': 'Expected',
+      'color': Colors.blue,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ExpectedScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.money_off,
+      'label': 'Expenses',
+      'color': Colors.red,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ExpensesScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.savings,
+      'label': 'Savings',
+      'color': Colors.purple,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SavingScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.credit_card,
+      'label': 'Loans',
+      'color': Colors.orange,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoansScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.bar_chart,
+      'label': 'Reports',
+      'color': Colors.teal,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ReportsScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.attach_money,
+      'label': 'Debt',
+      'color': Colors.pink,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DebtScreen()), // Replace with your actual screen
+        );
+      },
+    },
+    {
+      'icon': Icons.wifi,
+      'label': 'Utility',
+      'color': Colors.black,
+      'onTap': () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UtilityScreen()),
+        );
+      },
+    },
+  ];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 20,
-          childAspectRatio: 0.8,
-        ),
-        itemCount: menuItems.length,
-        itemBuilder: (context, index) {
-          return Column(
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 20,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: menuItems.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: menuItems[index]['onTap'],
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
@@ -401,11 +487,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
