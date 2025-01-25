@@ -432,7 +432,7 @@ Widget _buildMenuGrid() {
       'onTap': () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => UtilityScreen()),
+          MaterialPageRoute(builder: (context) => UtilityScreen( notificationsPlugin: widget.notificationsPlugin!,)),
         );
       },
     },
