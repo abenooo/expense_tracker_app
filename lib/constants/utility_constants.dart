@@ -4,14 +4,14 @@ import '../models/utility.dart';
 class UtilityConstants {
   static List<Utility> defaultUtilities = [
     Utility(
-      id: 'electric',
-      name: 'Ethiopian Electric Utility',
-      description: 'Ethiopian Electric Utility Bill Payment',
+      id: 'home',
+      name: 'Home',
+      description: 'Home Bill Payment',
       startDate: DateTime.now(),
       endDate: DateTime.now().add(const Duration(days: 30)),
       amount: 0,
-      iconName: 'electric_bolt',
-      logoPath: 'assets/logos/eeu_logo.png',
+      iconName: 'house',
+      logoPath: 'assets/logos/home_logo.png',
     ),
     Utility(
       id: 'telecom',
@@ -25,7 +25,7 @@ class UtilityConstants {
     ),
     Utility(
       id: 'water',
-      name: 'Addis Ababa Water Bill',
+      name: 'Water Bill',
       description: 'Pay Addis Ababa Water Bill Payment',
       startDate: DateTime.now(),
       endDate: DateTime.now().add(const Duration(days: 30)),
@@ -52,6 +52,16 @@ class UtilityConstants {
       amount: 0,
       iconName: 'tv',
       logoPath: 'assets/logos/dstv_logo.png',
+    ),
+     Utility(
+      id: 'electricity',
+      name: 'Electricity',
+      description: 'Electricity Bill Payment',
+      startDate: DateTime.now(),
+      endDate: DateTime.now().add(const Duration(days: 30)),
+      amount: 0,
+      iconName: 'electric_bolt',
+      logoPath: 'assets/logos/eeu_logo.png',
     ),
   ];
 
