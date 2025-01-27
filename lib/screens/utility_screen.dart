@@ -18,28 +18,18 @@ class UtilityScreen extends StatefulWidget {
 
 class _UtilityScreenState extends State<UtilityScreen> {
   late final UtilityService _utilityService;
-  List<Utility> _utilities = [];
-  bool _isLoading = true;
+  late Future<List<Utility>> _utilitiesFuture;
 
   @override
   void initState() {
     super.initState();
     _utilityService = UtilityService(widget.notificationsPlugin);
-    _initializeAndLoadUtilities();
+    _utilitiesFuture = _initializeAndLoadUtilities();
   }
 
-  Future<void> _initializeAndLoadUtilities() async {
+  Future<List<Utility>> _initializeAndLoadUtilities() async {
     await _utilityService.initializeDefaultUtilities();
-    await _loadUtilities();
-  }
-
-  Future<void> _loadUtilities() async {
-    setState(() => _isLoading = true);
-    final utilities = await _utilityService.getUtilities();
-    setState(() {
-      _utilities = utilities;
-      _isLoading = false;
-    });
+    return _utilityService.getUtilities();
   }
 
   void _showToast(String message) {
@@ -78,22 +68,38 @@ class _UtilityScreenState extends State<UtilityScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadUtilities,
+            onPressed: () {
+              setState(() {
+                _utilitiesFuture = _initializeAndLoadUtilities();
+              });
+            },
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.separated(
-              itemCount: _utilities.length + 1,
+      body: FutureBuilder<List<Utility>>(
+        future: _utilitiesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No utilities found.'));
+          } else {
+            final utilities = snapshot.data!;
+            return ListView.separated(
+              itemCount: utilities.length + 1,
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                if (index == _utilities.length) {
+                if (index == utilities.length) {
                   return _buildAddNewButton();
                 }
-                return _buildUtilityItem(_utilities[index]);
+                return _buildUtilityItem(utilities[index]);
               },
-            ),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -108,7 +114,11 @@ class _UtilityScreenState extends State<UtilityScreen> {
               builder: (context) => UtilityDetailScreen(
                 utility: utility,
                 notificationsPlugin: widget.notificationsPlugin,
-                onUpdate: _loadUtilities,
+                onUpdate: () {
+                  setState(() {
+                    _utilitiesFuture = _initializeAndLoadUtilities();
+                  });
+                },
               ),
             ),
           );
@@ -200,10 +210,13 @@ class _UtilityScreenState extends State<UtilityScreen> {
   Future<void> _showUtilityDialog(Utility? utility) async {
     final isEditing = utility != null;
     final nameController = TextEditingController(text: utility?.name ?? '');
-    final descriptionController = TextEditingController(text: utility?.description ?? '');
-    final amountController = TextEditingController(text: utility?.amount.toString() ?? '');
+    final descriptionController =
+        TextEditingController(text: utility?.description ?? '');
+    final amountController =
+        TextEditingController(text: utility?.amount.toString() ?? '');
     DateTime startDate = utility?.startDate ?? DateTime.now();
-    DateTime endDate = utility?.endDate ?? DateTime.now().add(const Duration(days: 30));
+    DateTime endDate =
+        utility?.endDate ?? DateTime.now().add(const Duration(days: 30));
     String selectedIcon = utility?.iconName ?? 'electric_bolt';
 
     await showDialog(
@@ -269,14 +282,16 @@ class _UtilityScreenState extends State<UtilityScreen> {
                           context: context,
                           initialDate: startDate,
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                         );
                         if (picked != null) {
                           setState(() => startDate = picked);
                         }
                       },
                       icon: const Icon(Icons.calendar_today),
-                      label: Text('Start: ${startDate.toString().substring(0, 10)}'),
+                      label: Text(
+                          'Start: ${startDate.toString().substring(0, 10)}'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -291,14 +306,16 @@ class _UtilityScreenState extends State<UtilityScreen> {
                           context: context,
                           initialDate: endDate,
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                         );
                         if (picked != null) {
                           setState(() => endDate = picked);
                         }
                       },
                       icon: const Icon(Icons.calendar_today),
-                      label: Text('End: ${endDate.toString().substring(0, 10)}'),
+                      label:
+                          Text('End: ${endDate.toString().substring(0, 10)}'),
                     ),
                   ),
                 ],
@@ -350,9 +367,12 @@ class _UtilityScreenState extends State<UtilityScreen> {
                     onPressed: () async {
                       final name = nameController.text;
                       final description = descriptionController.text;
-                      final amount = double.tryParse(amountController.text) ?? 0.0;
+                      final amount =
+                          double.tryParse(amountController.text) ?? 0.0;
 
-                      if (name.isNotEmpty && description.isNotEmpty && amount > 0) {
+                      if (name.isNotEmpty &&
+                          description.isNotEmpty &&
+                          amount > 0) {
                         if (isEditing) {
                           utility!.name = name;
                           utility.description = description;
@@ -376,7 +396,9 @@ class _UtilityScreenState extends State<UtilityScreen> {
                           _showToast('$name added successfully');
                         }
                         Navigator.pop(context);
-                        _loadUtilities();
+                        setState(() {
+                          _utilitiesFuture = _initializeAndLoadUtilities();
+                        });
                       }
                     },
                     child: Text(isEditing ? 'Update' : 'Add'),
@@ -390,4 +412,3 @@ class _UtilityScreenState extends State<UtilityScreen> {
     );
   }
 }
-
