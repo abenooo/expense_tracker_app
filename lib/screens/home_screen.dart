@@ -1,3 +1,4 @@
+import 'package:ethiopian_bank_tracker/screens/utility_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,13 @@ import '../models/bank_account.dart';
 import '../services/bank_service.dart';
 import 'base_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'income_screen.dart';
+import 'expected_screen.dart';
+import 'expenses_screen.dart';
+import 'saving_screen.dart';
+import 'loans_screen.dart';
+import 'reports_screen.dart';
+import 'debt_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final FlutterLocalNotificationsPlugin? notificationsPlugin;
@@ -338,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMenuGrid() {
+ Widget _buildMenuGrid() {
     final List<Map<String, dynamic>> menuItems = [
       {
         'icon': Icons.account_balance_wallet,
@@ -351,7 +359,29 @@ class _HomeScreenState extends State<HomeScreen> {
       {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
       {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
       {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
-       {'icon': Icons.wifi, 'label': 'Utility', 'color': const Color.fromARGB(255, 17, 18, 12)},
+      {
+        'icon': Icons.electric_bolt,
+        'label': 'Utilities',
+        'color': Colors.orange,
+        'onTap': () {
+          if (widget.notificationsPlugin != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UtilityScreen(
+                  notificationsPlugin: widget.notificationsPlugin!,
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Notifications plugin is not initialized.'),
+              ),
+            );
+          }
+        },
+      },
     ];
 
     return Container(
@@ -367,40 +397,43 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         itemCount: menuItems.length,
         itemBuilder: (context, index) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: menuItems[index]['color'].withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          return GestureDetector(
+            onTap: menuItems[index]['onTap'] as void Function()?,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: menuItems[index]['color'].withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    menuItems[index]['icon'],
+                    size: 36,
+                    color: menuItems[index]['color'],
+                  ),
                 ),
-                child: Icon(
-                  menuItems[index]['icon'],
-                  size: 36,
-                  color: menuItems[index]['color'],
+                const SizedBox(height: 8),
+                Text(
+                  menuItems[index]['label'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                menuItems[index]['label'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
