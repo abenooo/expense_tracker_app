@@ -346,153 +346,99 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-Widget _buildMenuGrid() {
-  final List<Map<String, dynamic>> menuItems = [
-    {
-      'icon': Icons.account_balance_wallet,
-      'label': 'Income',
-      'color': Colors.green,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => IncomeScreen()), // Replace with your actual screen
-        );
+ Widget _buildMenuGrid() {
+    final List<Map<String, dynamic>> menuItems = [
+      {
+        'icon': Icons.account_balance_wallet,
+        'label': 'Income',
+        'color': Colors.green
       },
-    },
-    {
-      'icon': Icons.trending_up,
-      'label': 'Expected',
-      'color': Colors.blue,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ExpectedScreen()), // Replace with your actual screen
-        );
+      {'icon': Icons.trending_up, 'label': 'Expected', 'color': Colors.blue},
+      {'icon': Icons.money_off, 'label': 'Expenses', 'color': Colors.red},
+      {'icon': Icons.savings, 'label': 'Savings', 'color': Colors.purple},
+      {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
+      {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
+      {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
+      {
+        'icon': Icons.electric_bolt,
+        'label': 'Utilities',
+        'color': Colors.orange,
+        'onTap': () {
+          if (widget.notificationsPlugin != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UtilityScreen(
+                  notificationsPlugin: widget.notificationsPlugin!,
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Notifications plugin is not initialized.'),
+              ),
+            );
+          }
+        },
       },
-    },
-    {
-      'icon': Icons.money_off,
-      'label': 'Expenses',
-      'color': Colors.red,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ExpensesScreen()), // Replace with your actual screen
-        );
-      },
-    },
-    {
-      'icon': Icons.savings,
-      'label': 'Savings',
-      'color': Colors.purple,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SavingScreen()), // Replace with your actual screen
-        );
-      },
-    },
-    {
-      'icon': Icons.credit_card,
-      'label': 'Loans',
-      'color': Colors.orange,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoansScreen()), // Replace with your actual screen
-        );
-      },
-    },
-    {
-      'icon': Icons.bar_chart,
-      'label': 'Reports',
-      'color': Colors.teal,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ReportsScreen()), // Replace with your actual screen
-        );
-      },
-    },
-    {
-      'icon': Icons.attach_money,
-      'label': 'Debt',
-      'color': Colors.pink,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DebtScreen()), // Replace with your actual screen
-        );
-      },
-    },
-    {
-      'icon': Icons.wifi,
-      'label': 'Utility',
-      'color': Colors.black,
-      'onTap': () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => UtilityScreen( notificationsPlugin: widget.notificationsPlugin!,)),
-        );
-      },
-    },
-  ];
+    ];
 
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 20,
-        childAspectRatio: 0.8,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 20,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: menuItems.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: menuItems[index]['onTap'] as void Function()?,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: menuItems[index]['color'].withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    menuItems[index]['icon'],
+                    size: 36,
+                    color: menuItems[index]['color'],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  menuItems[index]['label'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
-      itemCount: menuItems.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: menuItems[index]['onTap'],
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: menuItems[index]['color'].withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  menuItems[index]['icon'],
-                  size: 36,
-                  color: menuItems[index]['color'],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                menuItems[index]['label'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
-}
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
