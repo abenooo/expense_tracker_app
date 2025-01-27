@@ -90,7 +90,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final FlutterLocalNotificationsPlugin notificationsPlugin;
 
-  const MyApp({super.key, required this.notificationsPlugin});
+  const MyApp({Key? key, required this.notificationsPlugin}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
