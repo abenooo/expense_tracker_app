@@ -30,6 +30,7 @@ dependencies:
   build_runner: ^2.4.14
   uuid: ^4.5.1
   fluttertoast: ^8.2.10
+  timezone: ^0.10.0
 
 dev_dependencies:
   flutter_test:
