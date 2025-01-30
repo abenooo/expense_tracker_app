@@ -7,8 +7,9 @@ import './screens/home_screen.dart';
 import 'services/localization_service.dart';
 import 'theme.dart';
 import 'models/utility.dart';
-import 'models/saving_goal.dart'; // Import SavingGoal model
-import 'providers/saving_goals_provider.dart'; // Import SavingGoalsProvider
+import 'models/saving_goal.dart';
+import 'providers/saving_goals_provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -88,19 +89,23 @@ void main() async {
   // Initialize notifications
   await initNotifications();
 
+  // Initialize timezone
+  tz.initializeTimeZones();
+
   final localizationService = LocalizationService();
   await localizationService.init();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SavingGoalsProvider()),
+        ChangeNotifierProvider(create: (_) => SavingGoalsProvider(flutterLocalNotificationsPlugin)),
         ChangeNotifierProvider.value(value: localizationService),
       ],
       child: MyApp(notificationsPlugin: flutterLocalNotificationsPlugin),
     ),
   );
 }
+
 class MyApp extends StatelessWidget {
   final FlutterLocalNotificationsPlugin notificationsPlugin;
 
