@@ -7,13 +7,14 @@ import 'package:uuid/uuid.dart';
 import '../models/saving_goal.dart';
 import '../providers/saving_goals_provider.dart';
 import '../widgets/scrollable_goal_card.dart';
+
 class SavingScreen extends StatefulWidget {
   final FlutterLocalNotificationsPlugin? notificationsPlugin;
   
   const SavingScreen({
-    super.key,
+    Key? key,
     required this.notificationsPlugin,
-  });
+  }) : super(key: key);
 
   @override
   State<SavingScreen> createState() => _SavingScreenState();
@@ -25,6 +26,7 @@ class _SavingScreenState extends State<SavingScreen> {
   final _targetAmountController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
+  int _reminderFrequency = 10;
 
   @override
   void dispose() {
@@ -52,46 +54,69 @@ class _SavingScreenState extends State<SavingScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Create New Savings Goal'),
-        content: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Goal Name',
-                    prefixIcon: Icon(Icons.flag),
-                  ),
-                  validator: (value) => value!.isEmpty ? 'Required' : null,
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Goal Name',
+                        prefixIcon: Icon(Icons.flag),
+                      ),
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
+                    ),
+                    TextFormField(
+                      controller: _targetAmountController,
+                      decoration: const InputDecoration(
+                        labelText: 'Target Amount (ETB)',
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('Target Date'),
+                      subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
+                      onTap: () => _selectDate(context),
+                    ),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description (optional)',
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int>(
+                      value: _reminderFrequency,
+                      decoration: const InputDecoration(
+                        labelText: 'Reminder Frequency',
+                        prefixIcon: Icon(Icons.notifications),
+                      ),
+                      items: [5, 10, 15, 20, 25].map((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('Every $value% progress'),
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          _reminderFrequency = newValue!;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: _targetAmountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Target Amount (ETB)',
-                    prefixIcon: Icon(Icons.attach_money),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) => value!.isEmpty ? 'Required' : null,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Target Date'),
-                  subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
-                  onTap: () => _selectDate(context),
-                ),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    prefixIcon: Icon(Icons.description),
-                  ),
-                  maxLines: 2,
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         actions: [
           TextButton(
@@ -116,6 +141,7 @@ class _SavingScreenState extends State<SavingScreen> {
         currentAmount: 0,
         targetDate: _selectedDate,
         description: _descriptionController.text,
+        reminderFrequency: _reminderFrequency,
       );
       
       context.read<SavingGoalsProvider>().addGoal(newGoal);
@@ -128,7 +154,10 @@ class _SavingScreenState extends State<SavingScreen> {
     _nameController.clear();
     _targetAmountController.clear();
     _descriptionController.clear();
-    setState(() => _selectedDate = DateTime.now().add(const Duration(days: 30)));
+    setState(() {
+      _selectedDate = DateTime.now().add(const Duration(days: 30));
+      _reminderFrequency = 10;
+    });
   }
 
   @override
@@ -153,7 +182,7 @@ class _SavingScreenState extends State<SavingScreen> {
                   itemCount: provider.goals.length,
                   itemBuilder: (context, index) => ScrollableGoalCard(
                     goal: provider.goals[index],
-                    onDelete: _confirmDelete,
+                    onDelete: (String goalId) => provider.deleteGoal(goalId),
                     onAddFunds: _showAddFundsDialog,
                   ),
                 ),
@@ -161,6 +190,7 @@ class _SavingScreenState extends State<SavingScreen> {
       },
     );
   }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -179,97 +209,6 @@ class _SavingScreenState extends State<SavingScreen> {
           const SizedBox(height: 10),
           const Text('Start by creating your first savings goal'),
         ],
-      ),
-    );
-  }
-
-  Widget _buildGoalCard(SavingGoal goal) {
-    final progress = goal.progress.clamp(0.0, 1.0);
-    final daysRemaining = goal.targetDate.difference(DateTime.now()).inDays;
-
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  goal.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _confirmDelete(goal.id),
-                ),
-              ],
-            ),
-            if (goal.description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(goal.description),
-              ),
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 12,
-              backgroundColor: Colors.grey.shade200,
-              color: Colors.purple,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${(progress * 100).toStringAsFixed(1)}% Completed',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      '${daysRemaining}d remaining',
-                      style: TextStyle(
-                        color: daysRemaining < 30 ? Colors.red : Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${goal.formattedCurrentAmount} / ${goal.formattedTargetAmount}',
-                    ),
-                    Text(
-                      '${goal.formattedRemainingAmount} to go',
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _showAddFundsDialog(goal.id),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text('Add Funds'),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -316,32 +255,6 @@ class _SavingScreenState extends State<SavingScreen> {
       SnackBar(
         content: Text('Added ETB ${amount.toStringAsFixed(2)} to your goal'),
         backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  void _confirmDelete(String goalId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Goal?'),
-        content: const Text('This action cannot be undone'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<SavingGoalsProvider>().deleteGoal(goalId);
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
       ),
     );
   }
