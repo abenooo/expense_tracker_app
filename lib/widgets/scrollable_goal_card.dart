@@ -100,6 +100,14 @@ class ScrollableGoalCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            Text(
+              'Reminder: Every ${goal.reminderFrequency}% progress',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -116,4 +124,3 @@ class ScrollableGoalCard extends StatelessWidget {
     );
   }
 }
-
