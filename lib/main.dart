@@ -7,6 +7,9 @@ import './screens/home_screen.dart';
 import 'services/localization_service.dart';
 import 'theme.dart';
 import 'models/utility.dart';
+import 'models/saving_goal.dart';
+import 'providers/saving_goals_provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -70,18 +73,34 @@ void main() async {
 
   // Initialize Hive
   await Hive.initFlutter();
-  Hive.registerAdapter(UtilityAdapter());
+  
+  // Register Hive Adapters
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(UtilityAdapter());
+  }
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(SavingGoalAdapter());
+  }
+
+  // Open Hive Boxes
   await Hive.openBox<Utility>('utilities');
+  await Hive.openBox<SavingGoal>('saving_goals');
 
   // Initialize notifications
   await initNotifications();
+
+  // Initialize timezone
+  tz.initializeTimeZones();
 
   final localizationService = LocalizationService();
   await localizationService.init();
 
   runApp(
-    ChangeNotifierProvider.value(
-      value: localizationService,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SavingGoalsProvider(flutterLocalNotificationsPlugin)),
+        ChangeNotifierProvider.value(value: localizationService),
+      ],
       child: MyApp(notificationsPlugin: flutterLocalNotificationsPlugin),
     ),
   );
@@ -113,4 +132,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
