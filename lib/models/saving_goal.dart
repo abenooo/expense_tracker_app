@@ -26,6 +26,9 @@ class SavingGoal extends HiveObject {
   @HiveField(6)
   final DateTime createdAt;
 
+  @HiveField(7)
+  final int reminderFrequency;
+
   SavingGoal({
     required this.id,
     required this.name,
@@ -33,6 +36,7 @@ class SavingGoal extends HiveObject {
     required this.currentAmount,
     required this.targetDate,
     this.description = '',
+    this.reminderFrequency = 10,
   }) : createdAt = DateTime.now();
 
   double get progress => currentAmount / targetAmount;
@@ -56,6 +60,7 @@ class SavingGoal extends HiveObject {
     double? targetAmount,
     double? currentAmount,
     DateTime? targetDate,
+    int? reminderFrequency,
   }) {
     return SavingGoal(
       id: id ?? this.id,
@@ -64,6 +69,7 @@ class SavingGoal extends HiveObject {
       targetAmount: targetAmount ?? this.targetAmount,
       currentAmount: currentAmount ?? this.currentAmount,
       targetDate: targetDate ?? this.targetDate,
+      reminderFrequency: reminderFrequency ?? this.reminderFrequency,
     );
   }
 }
