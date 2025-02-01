@@ -1,3 +1,4 @@
+import 'package:ethiopian_bank_tracker/screens/expense_screen.dart';
 import 'package:ethiopian_bank_tracker/screens/utility_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
@@ -346,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
- Widget _buildMenuGrid() {
+Widget _buildMenuGrid() {
     final List<Map<String, dynamic>> menuItems = [
       {
         'icon': Icons.account_balance_wallet,
@@ -354,17 +355,34 @@ class _HomeScreenState extends State<HomeScreen> {
         'color': Colors.green
       },
       {'icon': Icons.trending_up, 'label': 'Expected', 'color': Colors.blue},
-      {'icon': Icons.money_off, 'label': 'Expenses', 'color': Colors.red},
-      {'icon': Icons.savings, 'label': 'Savings', 'color': Colors.purple, 'onTap': (){
+      {
+        'icon': Icons.money_off,
+        'label': 'Expenses',
+        'color': Color(0xFFE57373),
+        'onTap': () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>  SavingScreen(
-                   notificationsPlugin: widget.notificationsPlugin!,
-                ),
+            context,
+            MaterialPageRoute(
+              builder: (context) => ExpenseScreen(),
+            ),
+          );
+        },
+      },
+      {
+        'icon': Icons.savings,
+        'label': 'Savings',
+        'color': Colors.purple,
+        'onTap': () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SavingScreen(
+                notificationsPlugin: widget.notificationsPlugin!,
               ),
-            );
-      }},
+            ),
+          );
+        },
+      },
       {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
       {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
       {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
@@ -448,7 +466,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
