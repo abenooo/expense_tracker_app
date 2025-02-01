@@ -1,52 +1,44 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'saving_goal.dart';
+part of 'expense.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class SavingGoalAdapter extends TypeAdapter<SavingGoal> {
+class ExpenseAdapter extends TypeAdapter<Expense> {
   @override
-  final int typeId = 2;
+  final int typeId = 3;
 
   @override
-  SavingGoal read(BinaryReader reader) {
+  Expense read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return SavingGoal(
+    return Expense(
       id: fields[0] as String,
-      name: fields[1] as String,
-      targetAmount: fields[3] as double,
-      currentAmount: fields[4] as double,
-      targetDate: fields[5] as DateTime,
-      description: fields[2] as String,
-      reminderFrequency: fields[7] as int,
+      title: fields[1] as String,
+      amount: fields[2] as double,
+      date: fields[3] as DateTime,
+      category: fields[4] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, SavingGoal obj) {
+  void write(BinaryWriter writer, Expense obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.name)
+      ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.description)
+      ..write(obj.amount)
       ..writeByte(3)
-      ..write(obj.targetAmount)
+      ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.currentAmount)
-      ..writeByte(5)
-      ..write(obj.targetDate)
-      ..writeByte(6)
-      ..write(obj.createdAt)
-      ..writeByte(7)
-      ..write(obj.reminderFrequency);
+      ..write(obj.category);
   }
 
   @override
@@ -55,7 +47,7 @@ class SavingGoalAdapter extends TypeAdapter<SavingGoal> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SavingGoalAdapter &&
+      other is ExpenseAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

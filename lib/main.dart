@@ -10,6 +10,8 @@ import 'models/utility.dart';
 import 'models/saving_goal.dart';
 import 'providers/saving_goals_provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'models/expense.dart';
+import 'providers/expense_provider.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -81,10 +83,13 @@ void main() async {
   if (!Hive.isAdapterRegistered(2)) {
     Hive.registerAdapter(SavingGoalAdapter());
   }
-
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(ExpenseAdapter());
+  }
   // Open Hive Boxes
   await Hive.openBox<Utility>('utilities');
   await Hive.openBox<SavingGoal>('saving_goals');
+  await Hive.openBox<Expense>('expenses');
 
   // Initialize notifications
   await initNotifications();
@@ -99,6 +104,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SavingGoalsProvider(flutterLocalNotificationsPlugin)),
+        ChangeNotifierProvider(create: (_) => ExpenseProvider()),
         ChangeNotifierProvider.value(value: localizationService),
       ],
       child: MyApp(notificationsPlugin: flutterLocalNotificationsPlugin),
@@ -132,3 +138,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
