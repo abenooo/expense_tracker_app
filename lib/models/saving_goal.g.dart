@@ -23,13 +23,14 @@ class SavingGoalAdapter extends TypeAdapter<SavingGoal> {
       currentAmount: fields[4] as double,
       targetDate: fields[5] as DateTime,
       description: fields[2] as String,
+      reminderFrequency: fields[7] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, SavingGoal obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -43,7 +44,9 @@ class SavingGoalAdapter extends TypeAdapter<SavingGoal> {
       ..writeByte(5)
       ..write(obj.targetDate)
       ..writeByte(6)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(7)
+      ..write(obj.reminderFrequency);
   }
 
   @override
