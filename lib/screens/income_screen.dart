@@ -42,19 +42,19 @@ class _IncomeScreenState extends State<IncomeScreen> {
               // Sticky Section: Income Card and Graph
               Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.white,
+                color: Colors.green,
                 child: Column(
                   children: [
                     // Period Selector
                     _buildPeriodSelector(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
                     // Income Metric Card
                     _buildMetricCard(
                       'Total Income',
                       'ETB ${_calculateTotal(periodIncomes).toStringAsFixed(0)}',
                     ),
-                    // const SizedBox(height: -5),
+                    const SizedBox(height: 20),
 
                     // Income Frequency Graph
                     _buildSectionTitle('Income Frequency'),
@@ -67,9 +67,9 @@ class _IncomeScreenState extends State<IncomeScreen> {
               // Scrollable Section: All Incomes List
               Expanded(
                 child: Container(
-                  padding:const EdgeInsets.all(16),
-                  decoration:const BoxDecoration(
-                    color:  Colors.white,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -98,7 +98,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
           );
         },
         child: Icon(Icons.add, color: Colors.white),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -108,8 +108,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        // color: Colors.white.withOpacity(0.2),
-        color: Colors.deepPurple,
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -140,7 +139,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
         child: Text(
           period,
           style: TextStyle(
-            color: _currentPeriod == period ? Colors.deepPurple : Colors.white,
+            color: _currentPeriod == period ? Colors.green : Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -160,8 +159,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         width: MediaQuery.of(context).size.width,
-        // height: 200,
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -169,18 +168,18 @@ class _IncomeScreenState extends State<IncomeScreen> {
             Text(
               dynamicTitle,
               style: const TextStyle(
-                color: Colors.red,
+                color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            // const SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               value,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
+                color: Colors.green,
               ),
             ),
           ],
@@ -197,9 +196,10 @@ class _IncomeScreenState extends State<IncomeScreen> {
         Text(
           title,
           style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
       ],
     );
@@ -232,8 +232,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     _getBarLabel(value.toInt(), _currentPeriod),
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.deepPurple),
+                    style: const TextStyle(fontSize: 12, color: Colors.black),
                   );
                 },
               ),
@@ -244,8 +243,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.deepPurple),
+                    style: const TextStyle(fontSize: 12, color: Colors.black),
                   );
                 },
               ),
@@ -293,12 +291,12 @@ class _IncomeScreenState extends State<IncomeScreen> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             categoryIcons[income.category] ?? Icons.category,
-            color: Colors.deepPurple,
+            color: Colors.green,
           ),
         ),
         title: Text(income.title,
@@ -380,7 +378,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
       barRods: [
         BarChartRodData(
           toY: incomes.fold(0, (sum, e) => sum + e.amount),
-          color: Colors.deepPurple,
+          color: Colors.green,
           width: 16,
           borderRadius: BorderRadius.circular(4),
         ),

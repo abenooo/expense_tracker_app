@@ -235,11 +235,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     }
   }
 
-  double _getMaxExpense(List<Expense> expenses) {
-    if (expenses.isEmpty) return 100;
-    return expenses.map((e) => e.amount).reduce((a, b) => a > b ? a : b) * 1.2;
-  }
-
   double _calculateTotal(List<Expense> expenses) {
     return expenses.fold(0, (sum, expense) => sum + expense.amount);
   }
