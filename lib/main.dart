@@ -11,7 +11,10 @@ import 'models/saving_goal.dart';
 import 'providers/saving_goals_provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'models/expense.dart';
-import 'providers/expense_provider.dart';
+import 'providers/expense_provider.dart'; 
+import 'models/income.dart';
+import 'providers/income_provider.dart';
+import 'screens/income_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -73,9 +76,12 @@ Future<void> initNotifications() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Close Hive if it's already open
+  await Hive.close();
+
   // Initialize Hive
   await Hive.initFlutter();
-  
+
   // Register Hive Adapters
   if (!Hive.isAdapterRegistered(1)) {
     Hive.registerAdapter(UtilityAdapter());
@@ -86,10 +92,15 @@ void main() async {
   if (!Hive.isAdapterRegistered(3)) {
     Hive.registerAdapter(ExpenseAdapter());
   }
+  if (!Hive.isAdapterRegistered(4)) {
+    Hive.registerAdapter(IncomeAdapter()); // Register the Income adapter
+  }
+
   // Open Hive Boxes
   await Hive.openBox<Utility>('utilities');
   await Hive.openBox<SavingGoal>('saving_goals');
   await Hive.openBox<Expense>('expenses');
+  await Hive.openBox<Income>('incomes'); // Open a box for incomes
 
   // Initialize notifications
   await initNotifications();
@@ -105,13 +116,13 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => SavingGoalsProvider(flutterLocalNotificationsPlugin)),
         ChangeNotifierProvider(create: (_) => ExpenseProvider()),
+        ChangeNotifierProvider(create: (_) => IncomeProvider()), // Add IncomeProvider
         ChangeNotifierProvider.value(value: localizationService),
       ],
       child: MyApp(notificationsPlugin: flutterLocalNotificationsPlugin),
     ),
   );
 }
-
 class MyApp extends StatelessWidget {
   final FlutterLocalNotificationsPlugin notificationsPlugin;
 
