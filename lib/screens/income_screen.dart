@@ -42,7 +42,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
               // Sticky Section: Income Card and Graph
               Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.grey[100],
+                color: Colors.white,
                 child: Column(
                   children: [
                     // Period Selector
@@ -50,8 +50,10 @@ class _IncomeScreenState extends State<IncomeScreen> {
                     const SizedBox(height: 10),
 
                     // Income Metric Card
-                    _buildMetricCard('Total Income',
-                        'ETB ${_calculateTotal(periodIncomes).toStringAsFixed(0)}'),
+                    _buildMetricCard(
+                      'Total Income',
+                      'ETB ${_calculateTotal(periodIncomes).toStringAsFixed(0)}',
+                    ),
                     // const SizedBox(height: -5),
 
                     // Income Frequency Graph
@@ -65,9 +67,9 @@ class _IncomeScreenState extends State<IncomeScreen> {
               // Scrollable Section: All Incomes List
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                  padding:const EdgeInsets.all(16),
+                  decoration:const BoxDecoration(
+                    color:  Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -106,7 +108,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        // color: Colors.white.withOpacity(0.2),
+        color: Colors.deepPurple,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -147,6 +150,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
 
   // Income Metric Card
   Widget _buildMetricCard(String title, String value) {
+    final dynamicLabels = [_currentPeriod];
+    final dynamicTitle = 'This ${dynamicLabels.join(' + ')} $title';
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -157,19 +162,12 @@ class _IncomeScreenState extends State<IncomeScreen> {
         width: MediaQuery.of(context).size.width,
         // height: 200,
         decoration: BoxDecoration(
-          // gradient: const LinearGradient(
-          //   colors: [Colors.purple, Color.fromARGB(255, 146, 143, 97)],
-          //   begin: Alignment.topLeft,
-          //   end: Alignment.bottomRight,
-          // ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
-            // const  Icon(Icons.attach_money, size: 40, color: Colors.red),
-            // const SizedBox(height: 10),
             Text(
-              title,
+              dynamicTitle,
               style: const TextStyle(
                 color: Colors.red,
                 fontSize: 18,
