@@ -352,13 +352,19 @@ Widget _buildMenuGrid() {
       {
         'icon': Icons.account_balance_wallet,
         'label': 'Income',
-        'color': Colors.green
+        'color': Colors.green,
+        'onTap': () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => IncomeScreen()),
+          );
+        },
       },
       {'icon': Icons.trending_up, 'label': 'Expected', 'color': Colors.blue},
       {
         'icon': Icons.money_off,
         'label': 'Expenses',
-        'color': Color(0xFFE57373),
+        'color': const Color(0xFFE57373),
         'onTap': () {
           Navigator.push(
             context,
