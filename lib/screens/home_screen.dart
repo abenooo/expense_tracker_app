@@ -390,7 +390,14 @@ Widget _buildMenuGrid() {
         },
       },
       {'icon': Icons.credit_card, 'label': 'Loans', 'color': Colors.orange},
-      {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal},
+      {'icon': Icons.bar_chart, 'label': 'Reports', 'color': Colors.teal,
+      'onTap': () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ReportsScreen()),
+          );
+        },
+      },
       {'icon': Icons.attach_money, 'label': 'Debt', 'color': Colors.pink},
       {
         'icon': Icons.electric_bolt,
